@@ -11,3 +11,7 @@ export default function createApi() {
     },
   })
 }
+
+export function createNotFound(res: Res, message: string) {
+  res.status(404).json({ error: message })
+}

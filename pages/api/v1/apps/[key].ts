@@ -1,7 +1,7 @@
 import is from '@sindresorhus/is'
 
 import { PutApp } from '../../../../dto/apps/dto'
-import createApi from '../../../../helpers/api'
+import createApi, { createNotFound } from '../../../../helpers/api'
 import prisma from '../../../../helpers/database'
 import { validation } from '../../../../helpers/middleware'
 
@@ -13,7 +13,7 @@ api.put(validation(PutApp), async (req, res) => {
   const app = await prisma.app.update({ where: { key }, data: { name: dto.name } })
 
   if (is.null_(app)) {
-    res.status(404).json({ data: `${key} not found` })
+    createNotFound(res, `${key} not found`)
     return
   }
 

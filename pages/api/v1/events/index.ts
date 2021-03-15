@@ -1,7 +1,7 @@
 import is from '@sindresorhus/is'
 
 import { PostEvent } from '../../../../dto/events/dto'
-import createApi from '../../../../helpers/api'
+import createApi, { createNotFound } from '../../../../helpers/api'
 import prisma from '../../../../helpers/database'
 import { validation } from '../../../../helpers/middleware'
 
@@ -12,7 +12,7 @@ api.post(validation(PostEvent), async (req, res) => {
   const app = await prisma.app.findUnique({ where: { key: dto.appKey }, select: { id: true } })
 
   if (is.null_(app)) {
-    res.status(404).json({ error: 'appKey not found' })
+    createNotFound(res, 'appKey not found')
     return
   }
 
