@@ -1,4 +1,4 @@
-import { GetStaticPaths, GetStaticProps } from 'next'
+import { GetServerSideProps } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
 
@@ -27,20 +27,12 @@ export default function Home({ apps }: Props) {
   )
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  return {
-    fallback: 'blocking',
-    paths: [],
-  }
-}
-
-export const getStaticProps: GetStaticProps<Props> = async () => {
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
   const apps = await prisma.app.findMany({ select: { name: true, key: true } })
 
   return {
     props: {
       apps,
     },
-    revalidate: true,
   }
 }
