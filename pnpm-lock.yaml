@@ -1,12 +1,9 @@
 dependencies:
   '@prisma/client': 2.18.0_prisma@2.18.0
   '@sindresorhus/is': 4.0.0
-  autoprefixer: 10.2.5_postcss@8.2.8
   dayjs: 1.10.4
   next: 10.0.8_5347ba9dae72bc17e95cc7756ff465f1
   next-connect: 0.10.0
-  postcss: 8.2.8
-  prettier: 2.2.1
   prisma: 2.18.0
   react: 17.0.1
   react-dom: 17.0.1_react@17.0.1
@@ -21,6 +18,7 @@ devDependencies:
   '@types/uuid': 8.3.0
   '@typescript-eslint/eslint-plugin': 4.17.0_1761b76df9b5dd3adf5d03ef124e1b23
   '@typescript-eslint/parser': 4.17.0_eslint@7.22.0+typescript@4.2.3
+  autoprefixer: 10.2.5_postcss@8.2.8
   class-transformer: 0.4.0
   class-validator: 0.13.1
   eslint: 7.22.0
@@ -31,6 +29,8 @@ devDependencies:
   eslint-plugin-react-hooks: 4.2.0_eslint@7.22.0
   husky: 4.3.8
   lint-staged: 10.5.4
+  postcss: 8.2.8
+  prettier: 2.2.1
   tailwindcss: 2.0.3_caf414ac65a978d0d57907a0ec9fb41e
   typescript: 4.2.3
 lockfileVersion: 5.2
@@ -796,13 +796,13 @@ packages:
   /autoprefixer/10.2.5_postcss@8.2.8:
     dependencies:
       browserslist: 4.16.3
-      caniuse-lite: 1.0.30001199
+      caniuse-lite: 1.0.30001200
       colorette: 1.2.2
       fraction.js: 4.0.13
       normalize-range: 0.1.2
       postcss: 8.2.8
       postcss-value-parser: 4.1.0
-    dev: false
+    dev: true
     engines:
       node: ^10 || ^12 || >=14
     hasBin: true
@@ -928,11 +928,12 @@ packages:
       integrity: sha512-UXhDrwqsNcpTYJBTZsbGATDxZbiVDsx6UjpmRUmtnP10pr8wAYr5LgFoEFw9ixriQH2mv/NX2SfGzE/o8GndLA==
   /browserslist/4.16.3:
     dependencies:
-      caniuse-lite: 1.0.30001199
+      caniuse-lite: 1.0.30001200
       colorette: 1.2.2
       electron-to-chromium: 1.3.687
       escalade: 3.1.1
       node-releases: 1.1.71
+    dev: true
     engines:
       node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7
     hasBin: true
@@ -986,8 +987,13 @@ packages:
     resolution:
       integrity: sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==
   /caniuse-lite/1.0.30001199:
+    dev: false
     resolution:
       integrity: sha512-ifbK2eChUCFUwGhlEzIoVwzFt1+iriSjyKKFYNfv6hN34483wyWpLLavYQXhnR036LhkdUYaSDpHg1El++VgHQ==
+  /caniuse-lite/1.0.30001200:
+    dev: true
+    resolution:
+      integrity: sha512-ic/jXfa6tgiPBAISWk16jRI2q8YfjxHnSG7ddSL1ptrIP8Uy11SayFrjXRAk3NumHpDb21fdTkbTxb/hOrFrnQ==
   /chalk/2.4.2:
     dependencies:
       ansi-styles: 3.2.1
@@ -1840,7 +1846,7 @@ packages:
     resolution:
       integrity: sha512-zAoAQiudy+r5SvnSw3KJy5os/oRJYHzrzja/tBDqrZtNhUw8bt6y8OBzMWcjWr+8liV8Eb6yOhw8WZ7VFZ5ZzA==
   /fraction.js/4.0.13:
-    dev: false
+    dev: true
     resolution:
       integrity: sha512-E1fz2Xs9ltlUp+qbiyx9wmt2n9dRzPsS11Jtdb8D2o+cC7wr9xkkKsVKJuBX0ST+LVS+LhLO+SbLJNtfWcJvXA==
   /fs-extra/9.1.0:
@@ -2744,7 +2750,7 @@ packages:
     resolution:
       integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
   /normalize-range/0.1.2:
-    dev: false
+    dev: true
     engines:
       node: '>=0.10.0'
     resolution:
@@ -3127,6 +3133,7 @@ packages:
     resolution:
       integrity: sha512-pISE66AbVkp4fDQ7VHBwRNXzAAKJjw4Vw7nWI/+Q3vuly7SNfgYXvm6i5IgFylHGK5sP/xHAbB7N49OS4gWNyQ==
   /postcss-value-parser/4.1.0:
+    dev: true
     resolution:
       integrity: sha512-97DXOFbQJhk71ne5/Mt6cOu6yxsSfM0QGQyl0L25Gca4yGWEGJaig7l7gbCX623VqTBNGLRLaVUCnNkcedlRSQ==
   /postcss/6.0.23:
@@ -3165,6 +3172,7 @@ packages:
       colorette: 1.2.2
       nanoid: 3.1.21
       source-map: 0.6.1
+    dev: true
     engines:
       node: ^10 || ^12 || >=14
     resolution:
@@ -3184,7 +3192,7 @@ packages:
     resolution:
       integrity: sha512-GbK2cP9nraSSUF9N2XwUwqfzlAFlMNYYl+ShE/V+H8a9uNl/oUqB1w2EL54Jh0OlyRSd8RfWYJ3coVS4TROP2w==
   /prettier/2.2.1:
-    dev: false
+    dev: true
     engines:
       node: '>=10.13.0'
     hasBin: true
