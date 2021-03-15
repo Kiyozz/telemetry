@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model App {
+  id     Int @id @default(autoincrement())
+  name   String
+  events Event[]
+  key    String @unique()
+
+  @@map(name: "apps")
+}
+
+model Event {
+  id         Int @id @default(autoincrement())
+  type       String
+  properties Json?
+  appId      Int
+  app        App @relation(fields: [appId], references: [id])
+  createdAt  DateTime @default(now()) @map(name: "created_at")
+
+  @@map(name: "events")
+}

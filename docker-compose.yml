@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  postgres:
+    image: 'postgres:9.6-alpine'
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
