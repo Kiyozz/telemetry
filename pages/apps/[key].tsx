@@ -21,6 +21,24 @@ interface Props {
   stats: Stats
 }
 
+function sortStats(stats: Stats): [string, number][] {
+  const obj = Object.entries(stats)
+
+  obj.sort(([, aP], [, bP]) => {
+    if (aP < bP) {
+      return 1
+    }
+
+    if (bP < aP) {
+      return -1
+    }
+
+    return 0
+  })
+
+  return obj
+}
+
 export default function TelemetryView({ app, stats }: Props) {
   return (
     <>
@@ -47,7 +65,7 @@ export default function TelemetryView({ app, stats }: Props) {
                     </tr>
                   </thead>
                   <tbody className="text-center bg-gray-300">
-                    {Object.entries(stats).map(([k, p]) => (
+                    {sortStats(stats).map(([k, p]) => (
                       <tr key={k} className="border-t">
                         <td className="p-2">{k}</td>
                         <td>{p}</td>
@@ -128,6 +146,16 @@ export const getStaticProps: GetStaticProps<Props, { key: string }> = async cont
     }
   }
 
+  const stats = app.events.reduce((acc, item) => {
+    if (is.undefined(acc[item.type])) {
+      acc[item.type] = 1
+    } else {
+      acc[item.type] += 1
+    }
+
+    return acc
+  }, {} as Stats)
+
   return {
     props: {
       app: {
@@ -138,15 +166,7 @@ export const getStaticProps: GetStaticProps<Props, { key: string }> = async cont
           createdAt: dayjs(e.createdAt).format('DD/MM/YYYY\nHH:mm'),
         })),
       },
-      stats: app.events.reduce((acc, item) => {
-        if (is.undefined(acc[item.type])) {
-          acc[item.type] = 1
-        } else {
-          acc[item.type] += 1
-        }
-
-        return acc
-      }, {} as Stats),
+      stats,
     },
     revalidate: 60,
   }
