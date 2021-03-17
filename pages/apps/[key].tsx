@@ -3,43 +3,40 @@ import dayjs from 'dayjs'
 import { GetStaticPaths, GetStaticProps } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
 import prisma from '../../helpers/database'
 
-type Stats = Record<string, number>
+interface Stat {
+  type: string
+  count: number
+  properties: string
+}
 
 interface Props {
   app: {
     events: {
       id: number
       type: string
-      properties: Record<string, unknown>
+      properties: string
       createdAt: string
     }[]
     name: string
   }
-  stats: Stats
-}
-
-function sortStats(stats: Stats): [string, number][] {
-  const obj = Object.entries(stats)
-
-  obj.sort(([, aP], [, bP]) => {
-    if (aP < bP) {
-      return 1
-    }
-
-    if (bP < aP) {
-      return -1
-    }
-
-    return 0
-  })
-
-  return obj
+  stats: Stat[]
 }
 
 export default function TelemetryView({ app, stats }: Props) {
+  const router = useRouter()
+
+  if (router.isFallback) {
+    return (
+      <div className="fixed top-0 left-0 w-full h-full bg-white flex justify-center items-center text-2xl md:text-5xl">
+        Loading...
+      </div>
+    )
+  }
+
   return (
     <>
       <Head>
@@ -62,13 +59,15 @@ export default function TelemetryView({ app, stats }: Props) {
                     <tr>
                       <th className="p-2">Name</th>
                       <th className="p-2">Count</th>
+                      <th className="p-2">Properties</th>
                     </tr>
                   </thead>
                   <tbody className="text-center bg-gray-300">
-                    {sortStats(stats).map(([k, p]) => (
-                      <tr key={k} className="border-t">
-                        <td className="p-2">{k}</td>
-                        <td>{p}</td>
+                    {stats.map(({ type, count, properties }) => (
+                      <tr key={type + properties} className="border-t">
+                        <td className="p-1 sm:p-2 text-sm">{type}</td>
+                        <td className="p-1 sm:p-2 text-xs">{count}</td>
+                        <td className="p-1 sm:p-2 text-xs tracking-tighter font-light">{properties}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -94,14 +93,10 @@ export default function TelemetryView({ app, stats }: Props) {
                     </thead>
                     <tbody className="text-center bg-gray-300">
                       {app.events.map(event => (
-                        <tr key={event.id} className="border-t">
+                        <tr key={event.id} className="border-t text-xs">
                           <td className="p-1 sm:p-2">{event.type}</td>
                           <td className="p-1 sm:p-2">{event.createdAt}</td>
-                          <td className="p-1 sm:p-2">
-                            {is.emptyObject(event.properties)
-                              ? 'No properties'
-                              : JSON.stringify(event.properties, null, 2)}
-                          </td>
+                          <td className="p-1 sm:p-2 font-light tracking-tighter">{event.properties}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -125,7 +120,7 @@ export const getStaticPaths: GetStaticPaths<{ key: string }> = async () => {
     paths: apps.map(app => ({
       params: { key: `${app.key}` },
     })),
-    fallback: 'blocking',
+    fallback: true,
   }
 }
 
@@ -135,8 +130,19 @@ export const getStaticProps: GetStaticProps<Props, { key: string }> = async cont
   const app = await prisma.app.findUnique({
     where: { key },
     select: {
-      events: true,
+      events: {
+        select: {
+          createdAt: true,
+          type: true,
+          properties: true,
+          id: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
       name: true,
+      id: true,
     },
   })
 
@@ -146,25 +152,29 @@ export const getStaticProps: GetStaticProps<Props, { key: string }> = async cont
     }
   }
 
-  const stats = app.events.reduce((acc, item) => {
-    if (is.undefined(acc[item.type])) {
-      acc[item.type] = 1
-    } else {
-      acc[item.type] += 1
-    }
+  let stats = await prisma.$queryRaw<
+    Stat[]
+  >`SELECT e.type, COUNT(e.type) as count, e.properties FROM events e WHERE e."appId" = ${app.id} GROUP BY e.type, e.properties ORDER BY count DESC, e.type`
 
-    return acc
-  }, {} as Stats)
+  stats = stats.map(stat => {
+    const props = JSON.parse(stat.properties)
+
+    return { ...stat, properties: is.emptyObject(props) ? 'No properties' : JSON.stringify(props, null, 2) }
+  }) as Stat[]
 
   return {
     props: {
       app: {
         ...app,
-        events: app.events.map(e => ({
-          ...e,
-          properties: JSON.parse(e.properties as string),
-          createdAt: dayjs(e.createdAt).format('DD/MM/YYYY\nHH:mm'),
-        })),
+        events: app.events.map(e => {
+          const properties = JSON.parse(e.properties as string)
+
+          return {
+            ...e,
+            properties: is.emptyObject(properties) ? 'No properties' : JSON.stringify(properties, null, 2),
+            createdAt: dayjs(e.createdAt).format('DD/MM/YYYY\nHH:mm'),
+          }
+        }),
       },
       stats,
     },
