@@ -1,6 +1,8 @@
 dependencies:
   '@prisma/client': 2.18.0_prisma@2.18.0
   '@sindresorhus/is': 4.0.0
+  cache-manager: 3.4.1
+  cache-manager-redis-store: 2.0.0
   dayjs: 1.10.4
   next: 10.0.8_5347ba9dae72bc17e95cc7756ff465f1
   next-connect: 0.10.0
@@ -12,6 +14,7 @@ dependencies:
 devDependencies:
   '@babel/core': 7.13.10
   '@babel/plugin-proposal-decorators': 7.13.5_@babel+core@7.13.10
+  '@types/cache-manager': 3.4.0
   '@types/express': 4.17.11
   '@types/node': 14.14.34
   '@types/react': 17.0.3
@@ -425,6 +428,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-W98JrE0j2K78swW4ukqMleo8R7h/pFETjM2DQ90MF6XK2i4LO4W3gQ71Lt4w3bfm2EvVSyWHplECvB5sK22yFQ==
+  /@types/cache-manager/3.4.0:
+    dev: true
+    resolution:
+      integrity: sha512-XVbn2HS+O+Mk2SKRCjr01/8oD5p2Tv1fxxdBqJ0+Cl+UBNiz0WVY5rusHpMGx+qF6Vc2pnRwPVwSKbGaDApCpw==
   /@types/connect/3.4.34:
     dependencies:
       '@types/node': 14.14.34
@@ -787,6 +794,10 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-Z7tMw1ytTXt5jqMcOP+OQteU1VuNK9Y02uuJtKQ1Sv69jXQKKg5cibLwGJow8yzZP+eAc18EmLGPal0bp36rvQ==
+  /async/3.2.0:
+    dev: false
+    resolution:
+      integrity: sha512-TR2mEZFVOj2pLStYxLht7TyfuRzaydfpxr3k9RpHIzMgw7A64dzsdqCxH1WJyQdoe8T10nDXd9wnEigmiuHIZw==
   /at-least-node/1.0.0:
     dev: true
     engines:
@@ -967,6 +978,22 @@ packages:
       node: '>= 0.8'
     resolution:
       integrity: sha512-zauLjrfCG+xvoyaqLoV8bLVXXNGC4JqlxFCutSDWA6fJrTo2ZuvLYTqZ7aHBLZSMOopbzwv8f+wZcVzfVTI2Dg==
+  /cache-manager-redis-store/2.0.0:
+    dependencies:
+      redis: 3.0.2
+    dev: false
+    engines:
+      node: '>= 8.3'
+    resolution:
+      integrity: sha512-bWLWlUg6nCYHiJLCCYxY2MgvwvKnvlWwrbuynrzpjEIhfArD2GC9LtutIHFEPeyGVQN6C+WEw+P3r+BFBwhswg==
+  /cache-manager/3.4.1:
+    dependencies:
+      async: 3.2.0
+      lodash: 4.17.21
+      lru-cache: 6.0.0
+    dev: false
+    resolution:
+      integrity: sha512-yE50UL7AcuQ1ZydREl9OvPYD74gw3qS9HtZTY+2gS7fcZeIsyiof2UF+WReqg5ZX+852anbDe1fAtjsaMYT2yw==
   /call-bind/1.0.2:
     dependencies:
       function-bind: 1.1.1
@@ -1310,6 +1337,12 @@ packages:
     dev: true
     resolution:
       integrity: sha1-yY2bzvdWdBiOEQlpFRGZ45sfppM=
+  /denque/1.5.0:
+    dev: false
+    engines:
+      node: '>=0.10'
+    resolution:
+      integrity: sha512-CYiCSgIF1p6EUByQPlGkKnP1M9g0ZV3qMIrqMqZqdwazygIA/YP2vrbcyl1h/WppKJTdl1F85cXIle+394iDAQ==
   /depd/1.1.2:
     dev: false
     engines:
@@ -2520,7 +2553,6 @@ packages:
   /lru-cache/6.0.0:
     dependencies:
       yallist: 4.0.0
-    dev: true
     engines:
       node: '>=10'
     resolution:
@@ -3402,6 +3434,35 @@ packages:
       node: '>=8.10.0'
     resolution:
       integrity: sha512-cMhu7c/8rdhkHXWsY+osBhfSy0JikwpHK/5+imo+LpeasTF8ouErHrlYkwT0++njiyuDvc7OFY5T3ukvZ8qmFQ==
+  /redis-commands/1.7.0:
+    dev: false
+    resolution:
+      integrity: sha512-nJWqw3bTFy21hX/CPKHth6sfhZbdiHP6bTawSgQBlKOVRG7EZkfHbbHwQJnrE4vsQf0CMNE+3gJ4Fmm16vdVlQ==
+  /redis-errors/1.2.0:
+    dev: false
+    engines:
+      node: '>=4'
+    resolution:
+      integrity: sha1-62LSrbFeTq9GEMBK/hUpOEJQq60=
+  /redis-parser/3.0.0:
+    dependencies:
+      redis-errors: 1.2.0
+    dev: false
+    engines:
+      node: '>=4'
+    resolution:
+      integrity: sha1-tm2CjNyv5rS4pCin3vTGvKwxyLQ=
+  /redis/3.0.2:
+    dependencies:
+      denque: 1.5.0
+      redis-commands: 1.7.0
+      redis-errors: 1.2.0
+      redis-parser: 3.0.0
+    dev: false
+    engines:
+      node: '>=6'
+    resolution:
+      integrity: sha512-PNhLCrjU6vKVuMOyFu7oSP296mwBkcE6lrAjruBYG5LgdSqtRBoVQIylrMyVZD/lkF24RSNNatzvYag6HRBHjQ==
   /reduce-css-calc/2.1.8:
     dependencies:
       css-unit-converter: 1.1.2
@@ -4207,7 +4268,6 @@ packages:
     resolution:
       integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==
   /yallist/4.0.0:
-    dev: true
     resolution:
       integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
   /yaml/1.10.2:
@@ -4226,6 +4286,7 @@ specifiers:
   '@babel/plugin-proposal-decorators': ^7.13.5
   '@prisma/client': ^2.18.0
   '@sindresorhus/is': ^4.0.0
+  '@types/cache-manager': ^3.4.0
   '@types/express': ^4.17.11
   '@types/node': ^14.14.34
   '@types/react': ^17.0.3
@@ -4233,6 +4294,8 @@ specifiers:
   '@typescript-eslint/eslint-plugin': ^4.17.0
   '@typescript-eslint/parser': ^4.17.0
   autoprefixer: ^10.2.5
+  cache-manager: ^3.4.1
+  cache-manager-redis-store: ^2.0.0
   class-transformer: ^0.4.0
   class-validator: ^0.13.1
   dayjs: ^1.10.4
