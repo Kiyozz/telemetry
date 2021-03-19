@@ -1,8 +1,8 @@
-import cacheManager from '../helpers/cache'
+import cache from '../helpers/cache'
 
 async function start() {
   try {
-    await cacheManager.reset()
+    await cache.reset()
   } catch (e) {
     console.error(e)
     process.exit(1)

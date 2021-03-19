@@ -2,9 +2,9 @@ import is from '@sindresorhus/is'
 
 import { PutApp } from '../../../../dto/apps/dto'
 import createApi, { createNotFound } from '../../../../helpers/api'
-import cacheManager from '../../../../helpers/cache'
+import cache from '../../../../helpers/cache'
 import prisma from '../../../../helpers/database'
-import { validation } from '../../../../helpers/middleware'
+import validation from '../../../../helpers/middleware/validation'
 
 const api = createApi()
 
@@ -18,8 +18,8 @@ api.put(validation(PutApp), async (req, res) => {
     return
   }
 
-  cacheManager.deleteAllApps()
-  cacheManager.deleteAppViaKey(app.key)
+  cache.deleteAllApps()
+  cache.deleteAppViaKey(app.key)
 
   res.status(200).json({ data: app })
 })

@@ -1,7 +1,7 @@
 import cacheManagerLibrary, { Cache, CacheOptions, StoreConfig } from 'cache-manager'
 import redisStore from 'cache-manager-redis-store'
 
-let cache: Cache
+let cacheRedis: Cache
 
 function createCache(): Cache {
   const options: StoreConfig & CacheOptions = {
@@ -14,12 +14,12 @@ function createCache(): Cache {
 }
 
 if (process.env.NODE_ENV === 'production') {
-  cache = createCache()
+  cacheRedis = createCache()
 } else {
   if (!((global as unknown) as { cacheManagerRedis: Cache }).cacheManagerRedis) {
     ;((global as unknown) as { cacheManagerRedis: Cache }).cacheManagerRedis = createCache()
   }
-  cache = ((global as unknown) as { cacheManagerRedis: Cache }).cacheManagerRedis
+  cacheRedis = ((global as unknown) as { cacheManagerRedis: Cache }).cacheManagerRedis
 }
 
 class CacheManager {
@@ -62,11 +62,11 @@ class CacheManager {
   }
 }
 
-const cacheManager = new CacheManager(cache)
+const cache = new CacheManager(cacheRedis)
 
 export enum CacheKey {
   AppOne = 'app-one',
   Apps = 'apps',
 }
 
-export default cacheManager
+export default cache

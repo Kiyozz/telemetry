@@ -5,7 +5,7 @@ import Head from 'next/head'
 
 import AppBar from '../../components/app-bar'
 import DataTable from '../../components/data-table'
-import cacheManager from '../../helpers/cache'
+import cache from '../../helpers/cache'
 import prisma from '../../helpers/database'
 
 interface Stat {
@@ -79,7 +79,7 @@ export default function TelemetryView({ app, stats }: Props) {
 export const getServerSideProps: GetServerSideProps<Props, { key: string }> = async context => {
   const { key } = context.params
 
-  const cached = await cacheManager.getAppViaKey<string>(key)
+  const cached = await cache.getAppViaKey<string>(key)
 
   if (is.string(cached)) {
     return {
@@ -146,7 +146,7 @@ ORDER BY
     events,
   }
 
-  cacheManager.setAppViaKey(key, JSON.stringify({ app: finalApp, stats }))
+  cache.setAppViaKey(key, JSON.stringify({ app: finalApp, stats }))
 
   return {
     props: {

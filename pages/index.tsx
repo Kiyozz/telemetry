@@ -4,7 +4,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 
 import AppBar from '../components/app-bar'
-import cacheManager from '../helpers/cache'
+import cache from '../helpers/cache'
 import prisma from '../helpers/database'
 
 interface Props {
@@ -38,7 +38,7 @@ export default function Home({ apps }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
-  const cached = await cacheManager.getApps<string>()
+  const cached = await cache.getApps<string>()
 
   if (is.string(cached)) {
     return {
@@ -48,7 +48,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 
   const apps = await prisma.app.findMany({ select: { name: true, key: true } })
 
-  cacheManager.setApps(JSON.stringify({ apps }))
+  cache.setApps(JSON.stringify({ apps }))
 
   return {
     props: {

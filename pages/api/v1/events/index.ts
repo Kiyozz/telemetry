@@ -2,9 +2,9 @@ import is from '@sindresorhus/is'
 
 import { PostEvent } from '../../../../dto/events/dto'
 import createApi, { createNotFound } from '../../../../helpers/api'
-import cacheManager from '../../../../helpers/cache'
+import cache from '../../../../helpers/cache'
 import prisma from '../../../../helpers/database'
-import { validation } from '../../../../helpers/middleware'
+import validation from '../../../../helpers/middleware/validation'
 
 const api = createApi()
 
@@ -21,7 +21,7 @@ api.post(validation(PostEvent), async (req, res) => {
     data: { appId: app.id, type: dto.type, properties: dto.propertiesString },
   })
 
-  cacheManager.deleteAppViaKey(dto.appKey)
+  cache.deleteAppViaKey(dto.appKey)
 
   res.status(201).json({ data: event })
 })
