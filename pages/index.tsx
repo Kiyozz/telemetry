@@ -38,11 +38,9 @@ export default function Home({ apps }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
-  console.log((Date.now() / 1000).toFixed(3))
   const cached = await cache.get(CacheKey.Apps)
 
   if (is.string(cached)) {
-    console.log('-', (Date.now() / 1000).toFixed(3))
     return {
       props: JSON.parse(cached) as Props,
     }
@@ -50,8 +48,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
 
   const apps = await prisma.app.findMany({ select: { name: true, key: true } })
 
-  cache.set(CacheKey.Apps, JSON.stringify({ apps }), { ttl: 3600 })
-  console.log((Date.now() / 1000).toFixed(3))
+  cache.set(CacheKey.Apps, JSON.stringify({ apps }), { ttl: 0 })
 
   return {
     props: {

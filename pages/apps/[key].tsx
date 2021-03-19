@@ -142,11 +142,11 @@ ORDER BY
   )
 
   const finalApp = {
-    ...result,
+    name: app.name,
     events,
   }
 
-  cache.set(`${CacheKey.AppOne}-${key}`, JSON.stringify({ app: finalApp, stats }))
+  cache.set(`${CacheKey.AppOne}-${key}`, JSON.stringify({ app: finalApp, stats }), { ttl: 0 })
 
   return {
     props: {

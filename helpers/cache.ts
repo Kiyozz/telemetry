@@ -1,15 +1,16 @@
-import cacheManager, { Cache } from 'cache-manager'
+import cacheManager, { Cache, CacheOptions, StoreConfig } from 'cache-manager'
 import redisStore from 'cache-manager-redis-store'
 
 let cache: Cache
 
 function createCache(): Cache {
-  return cacheManager.caching({
+  const options: StoreConfig & CacheOptions = {
     store: redisStore,
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
+    url: process.env.REDIS_URL,
     ttl: 3,
-  })
+  }
+
+  return cacheManager.caching(options)
 }
 
 if (process.env.NODE_ENV === 'production') {
