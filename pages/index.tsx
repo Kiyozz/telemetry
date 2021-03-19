@@ -6,6 +6,7 @@ import Link from 'next/link'
 import AppBar from '../components/app-bar'
 import cache from '../helpers/cache'
 import prisma from '../helpers/database'
+import time from '../helpers/time'
 
 interface Props {
   apps: { name: string; key: string }[]
@@ -38,17 +39,29 @@ export default function Home({ apps }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
+  console.log('--------')
+
+  const timer = time('apps')
+  const timerCache = time('apps/cache')
   const cached = await cache.getApps<string>()
 
+  timerCache()
+
   if (is.string(cached)) {
+    timer()
+    console.log('apps/cached')
+
     return {
       props: JSON.parse(cached) as Props,
     }
   }
 
+  const timerGetApps = time('apps/findMany')
   const apps = await prisma.app.findMany({ select: { name: true, key: true } })
 
+  timerGetApps()
   cache.setApps(JSON.stringify({ apps }))
+  timer()
 
   return {
     props: {

@@ -1,5 +1,4 @@
 import is from '@sindresorhus/is'
-import dayjs from 'dayjs'
 import { GetServerSideProps } from 'next'
 import Head from 'next/head'
 
@@ -7,6 +6,8 @@ import AppBar from '../../components/app-bar'
 import DataTable from '../../components/data-table'
 import cache from '../../helpers/cache'
 import prisma from '../../helpers/database'
+import formatDate from '../../helpers/formatDate'
+import time from '../../helpers/time'
 
 interface Stat {
   type: string
@@ -78,16 +79,24 @@ export default function TelemetryView({ app, stats, updatedAt }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps<Props, { key: string }> = async context => {
+  console.log('--------')
+  const timer = time('apps/[key]')
   const { key } = context.params
-
+  const timerCache = time('apps/[key]/cache')
   const cached = await cache.getAppViaKey<string>(key)
 
+  timerCache()
+
   if (is.string(cached)) {
+    timer()
+    console.log('apps/[key]/cached')
+
     return {
       props: JSON.parse(cached) as Props,
     }
   }
 
+  const timerGetApp = time('apps/[key]/app')
   const app = await prisma.app.findUnique({
     where: {
       key,
@@ -98,12 +107,17 @@ export const getServerSideProps: GetServerSideProps<Props, { key: string }> = as
     },
   })
 
+  timerGetApp()
+
   if (is.null_(app)) {
+    timer()
+
     return {
       notFound: true,
     }
   }
 
+  const timerCreatedAt = time('apps/[key]/created-at')
   const { createdAt: lastCreatedAt } = await prisma.event.findFirst({
     select: {
       createdAt: true,
@@ -116,8 +130,12 @@ export const getServerSideProps: GetServerSideProps<Props, { key: string }> = as
     },
     take: 1,
   })
+  const lastUpdatedAt = formatDate(lastCreatedAt, { space: true })
 
-  const lastUpdatedAt = dayjs(lastCreatedAt).format('DD/MM/YYYY HH:mm')
+  timerCreatedAt()
+
+  const timerEvents = time('apps/[key]/events')
+
   const result = await prisma.$queryRaw<Event[]>(`SELECT
        e.type,
        e.properties,
@@ -134,6 +152,10 @@ ORDER BY
     event_created_at DESC,
     count DESC`)
 
+  timerEvents()
+
+  const timerStats = time('apps/[key]/stats')
+
   let stats = await prisma.$queryRaw<
     Stat[]
   >`SELECT e.type, COUNT(e.type) as count, e.properties FROM events e WHERE e."appId" = ${app.id} GROUP BY e.type, e.properties ORDER BY count DESC, e.type`
@@ -144,6 +166,10 @@ ORDER BY
     return { ...stat, properties: is.emptyObject(props) ? 'No properties' : JSON.stringify(props, null, 2) }
   }) as Stat[]
 
+  timerStats()
+
+  const timerOther = time('apps/[key]/other')
+
   const events = result.map(
     (e): Event => {
       const properties = JSON.parse(e.properties as string)
@@ -151,17 +177,19 @@ ORDER BY
       return {
         ...e,
         properties: is.emptyObject(properties) ? 'No properties' : JSON.stringify(properties, null, 2),
-        event_created_at: dayjs(e.event_created_at).format('DD/MM/YYYY\nHH:mm'),
+        event_created_at: formatDate(e.event_created_at, { eol: true }),
       }
     },
   )
-
   const finalApp = {
     name: app.name,
     events,
   }
 
   cache.setAppViaKey(key, JSON.stringify({ app: finalApp, stats, updatedAt: lastUpdatedAt }))
+
+  timerOther()
+  timer()
 
   return {
     props: {

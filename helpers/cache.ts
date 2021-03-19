@@ -34,7 +34,7 @@ class CacheManager {
   }
 
   getAppViaKey<T>(key: string): Promise<T> {
-    return this.cache.get<T>(key)
+    return this.cache.get<T>(`${CacheManager.getKeyAppOne(key)}`)
   }
 
   setAppViaKey(key: string, payload: unknown): void {
