@@ -36,7 +36,7 @@ export default function TelemetryView({ app, stats }: Props) {
         <title>Telemetry {app.name}</title>
       </Head>
       <AppBar title={`Application ${app.name}`} />
-      <div className="px-4 mt-16">
+      <div className="px-4 pb-4 mt-16">
         <div>
           <h2>Number of events</h2>
 

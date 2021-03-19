@@ -22,7 +22,7 @@ button {
 }
 
 .data-table {
-  @apply block sm:table;
+  @apply block sm:table w-full;
 }
 
 .data-table tbody {
@@ -87,6 +87,10 @@ button {
 
 .data-table tr {
   @apply block mb-8 rounded sm:rounded-none sm:mb-0 sm:table-row;
+}
+
+.data-table tr:last-child {
+  @apply mb-0;
 }
 
 .data-table td {
