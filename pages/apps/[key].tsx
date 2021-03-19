@@ -27,15 +27,16 @@ interface Props {
     events: Event[]
   }
   stats: Stat[]
+  updatedAt: string
 }
 
-export default function TelemetryView({ app, stats }: Props) {
+export default function TelemetryView({ app, stats, updatedAt }: Props) {
   return (
     <>
       <Head>
         <title>Telemetry {app.name}</title>
       </Head>
-      <AppBar title={`Application ${app.name}`} />
+      <AppBar title={`Application ${app.name}`}>Updated at {updatedAt}</AppBar>
       <div className="px-4 pb-4 mt-16">
         <div>
           <h2>Number of events</h2>
@@ -103,6 +104,20 @@ export const getServerSideProps: GetServerSideProps<Props, { key: string }> = as
     }
   }
 
+  const { createdAt: lastCreatedAt } = await prisma.event.findFirst({
+    select: {
+      createdAt: true,
+    },
+    where: {
+      appId: app.id,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: 1,
+  })
+
+  const lastUpdatedAt = dayjs(lastCreatedAt).format('DD/MM/YYYY HH:mm')
   const result = await prisma.$queryRaw<Event[]>(`SELECT
        e.type,
        e.properties,
@@ -146,7 +161,7 @@ ORDER BY
     events,
   }
 
-  cache.setAppViaKey(key, JSON.stringify({ app: finalApp, stats }))
+  cache.setAppViaKey(key, JSON.stringify({ app: finalApp, stats, updatedAt: lastUpdatedAt }))
 
   return {
     props: {
@@ -155,6 +170,7 @@ ORDER BY
         events,
       },
       stats,
+      updatedAt: lastUpdatedAt,
     },
   }
 }
