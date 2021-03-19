@@ -2,7 +2,7 @@ import is from '@sindresorhus/is'
 
 import { PutApp } from '../../../../dto/apps/dto'
 import createApi, { createNotFound } from '../../../../helpers/api'
-import cache, { CacheKey } from '../../../../helpers/cache'
+import cacheManager from '../../../../helpers/cache'
 import prisma from '../../../../helpers/database'
 import { validation } from '../../../../helpers/middleware'
 
@@ -18,8 +18,8 @@ api.put(validation(PutApp), async (req, res) => {
     return
   }
 
-  cache.del(CacheKey.Apps)
-  cache.del(`${CacheKey.AppOne}-${app.key}`)
+  cacheManager.deleteAllApps()
+  cacheManager.deleteAppViaKey(app.key)
 
   res.status(200).json({ data: app })
 })

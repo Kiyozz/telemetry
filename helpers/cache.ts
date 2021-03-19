@@ -1,4 +1,4 @@
-import cacheManager, { Cache, CacheOptions, StoreConfig } from 'cache-manager'
+import cacheManagerLibrary, { Cache, CacheOptions, StoreConfig } from 'cache-manager'
 import redisStore from 'cache-manager-redis-store'
 
 let cache: Cache
@@ -10,7 +10,7 @@ function createCache(): Cache {
     ttl: 3,
   }
 
-  return cacheManager.caching(options)
+  return cacheManagerLibrary.caching(options)
 }
 
 if (process.env.NODE_ENV === 'production') {
@@ -22,9 +22,51 @@ if (process.env.NODE_ENV === 'production') {
   cache = ((global as unknown) as { cacheManagerRedis: Cache }).cacheManagerRedis
 }
 
+class CacheManager {
+  constructor(private cache: Cache) {}
+
+  deleteAllApps(): void {
+    this.cache.del(CacheKey.Apps)
+  }
+
+  deleteAppViaKey(key: string): void {
+    this.cache.del(`${CacheKey.AppOne}-${key}`)
+  }
+
+  getAppViaKey<T>(key: string): Promise<T> {
+    return this.cache.get<T>(key)
+  }
+
+  setAppViaKey(key: string, payload: unknown): void {
+    this.cache.set(CacheManager.getKeyAppOne(key), payload, { ttl: 0 })
+  }
+
+  getApps<T>(): Promise<T> {
+    return this.cache.get<T>(CacheManager.getKeyApps())
+  }
+
+  setApps(payload: unknown) {
+    this.cache.set(CacheManager.getKeyApps(), payload)
+  }
+
+  reset(): Promise<void> {
+    return this.cache.reset()
+  }
+
+  private static getKeyAppOne(key: string): string {
+    return `${CacheKey.AppOne}-${key}`
+  }
+
+  private static getKeyApps(): string {
+    return CacheKey.Apps
+  }
+}
+
+const cacheManager = new CacheManager(cache)
+
 export enum CacheKey {
   AppOne = 'app-one',
   Apps = 'apps',
 }
 
-export default cache
+export default cacheManager
