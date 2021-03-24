@@ -35,13 +35,23 @@ interface Props {
   updatedAt: string
 }
 
-export default function TelemetryView({ app, summary: initialSummary, summaryWithoutProperties, updatedAt }: Props) {
+function filterSearch<T extends Pick<Summary, 'type'>>(array: T[], query: string): T[] {
+  return array.filter(({ type }) => type.toLowerCase().includes(query.toLowerCase()))
+}
+
+export default function TelemetryView({
+  app,
+  summary: initialSummary,
+  summaryWithoutProperties: initialSummaryWithoutProperties,
+  updatedAt,
+}: Props) {
   const [isDetailsActive, setDetailsActive] = useState(true)
   const [isSummaryActive, setSummaryActive] = useState(true)
   const [isSummaryPropertiesActive, setSummaryPropertiesActive] = useState(true)
-  const { register, handleSubmit } = useForm({ defaultValues: { type: '' } })
+  const { register, handleSubmit, getValues } = useForm({ defaultValues: { type: '' } })
   const { register: detailsRegister, handleSubmit: handleDetailsSubmit } = useForm({ defaultValues: { type: '' } })
   const [summary, setSummary] = useState(initialSummary)
+  const [summaryWithoutProperties, setSummaryWithoutProperties] = useState(initialSummaryWithoutProperties)
   const [events, setEvents] = useState(app.events)
 
   useLayoutEffect(() => {
@@ -71,11 +81,19 @@ export default function TelemetryView({ app, summary: initialSummary, summaryWit
   const onClickSummaryPropertiesActive = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.blur()
 
+    const query = getValues('type')
+
     setSummaryPropertiesActive(a => !a)
+    setSummary(filterSearch(initialSummary, query))
+    setSummaryWithoutProperties(filterSearch(initialSummaryWithoutProperties, query))
   }
 
   const onSubmitSummary = handleSubmit(data => {
-    setSummary(initialSummary.filter(({ type }) => type.toLowerCase().includes(data.type.toLowerCase())))
+    if (isSummaryPropertiesActive) {
+      setSummary(filterSearch(initialSummary, data.type))
+    } else {
+      setSummaryWithoutProperties(filterSearch(initialSummaryWithoutProperties, data.type))
+    }
   })
 
   const onSubmitDetails = handleDetailsSubmit(data => {
