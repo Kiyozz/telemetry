@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { PropsWithChildren } from 'react'
 
 interface AppBarProps {
-  title?: string
+  title?: string | JSX.Element
 }
 
 export default function AppBar({ title, children }: PropsWithChildren<AppBarProps>) {
@@ -18,8 +18,8 @@ export default function AppBar({ title, children }: PropsWithChildren<AppBarProp
           Home
         </a>
       </Link>
-      <h1 className="text-headline text-center font-bold ml-auto">{title ?? 'Telemetry'}</h1>
-      <div className="ml-auto">{children}</div>
+      <h1 className="text-headline text-center font-bold mx-auto">{title ?? 'Telemetry'}</h1>
+      <div className="absolute right-4">{children}</div>
     </div>
   )
 }

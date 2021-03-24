@@ -46,7 +46,7 @@ class CacheManager {
   }
 
   setApps(payload: unknown) {
-    this.cache.set(CacheManager.getKeyApps(), payload)
+    this.cache.set(CacheManager.getKeyApps(), payload, { ttl: 0 })
   }
 
   reset(): Promise<void> {

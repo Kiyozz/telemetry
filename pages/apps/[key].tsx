@@ -37,7 +37,17 @@ export default function TelemetryView({ app, stats, updatedAt }: Props) {
       <Head>
         <title>Telemetry {app.name}</title>
       </Head>
-      <AppBar title={`Application ${app.name}`}>Updated at {updatedAt}</AppBar>
+      <AppBar
+        title={
+          <>
+            <span className="hidden sm:inline">Application </span>
+            {app.name}
+          </>
+        }
+      >
+        <span className="hidden sm:inline">Updated at </span>
+        {updatedAt}
+      </AppBar>
       <div className="px-4 pb-4 mt-16">
         <div>
           <h2>Number of events</h2>
