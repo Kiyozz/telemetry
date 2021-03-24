@@ -1,0 +1,3 @@
+.inline-form * + * {
+  @apply ml-4;
+}

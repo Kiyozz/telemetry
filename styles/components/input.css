@@ -1,0 +1,3 @@
+input {
+  @apply bg-background border-2 border-primary-400 rounded text-text px-2 focus:outline-none focus:border-primary-700 transition-colors;
+}

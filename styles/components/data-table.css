@@ -1,0 +1,91 @@
+.data-table-wrap {
+  @apply sm:rounded-md overflow-hidden;
+}
+
+.data-table {
+  @apply block sm:table w-full;
+}
+
+.data-table tbody {
+  @apply block sm:table-row-group;
+}
+
+.data-table td,
+.data-table th {
+  @apply text-left py-5;
+}
+
+.data-table tbody tr {
+  @apply bg-background-lighter;
+}
+
+.data-table.compact td {
+  @apply py-1.5;
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  @apply sm:pl-5 md:pl-10 md:w-1/6;
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+  @apply sm:pr-5 md:pr-10 md:w-1/6;
+}
+
+.data-table th:first-child,
+.data-table td:first-child,
+.data-table th:nth-child(2),
+.data-table td:nth-child(2),
+.data-table th:nth-child(3),
+.data-table td:nth-child(3),
+.data-table th:nth-child(4),
+.data-table td:nth-child(4),
+.data-table th:last-child,
+.data-table td:last-child {
+  @apply sm:w-1/6;
+}
+
+.data-table td:not(:first-child):not(:last-child) {
+  @apply pl-4 sm:pl-0;
+}
+
+.data-table td:last-child {
+  word-wrap: anywhere;
+}
+
+.data-table tbody tr:not(:last-child) td {
+  @apply sm:border-b sm:border-secondary;
+}
+
+.data-table thead {
+  @apply hidden sm:table-header-group;
+}
+
+.data-table thead tr {
+  @apply bg-primary-400 text-lg;
+}
+
+.data-table tr {
+  @apply block mb-8 rounded sm:rounded-none sm:mb-0 sm:table-row;
+}
+
+.data-table tr:last-child {
+  @apply mb-0;
+}
+
+.data-table td {
+  @apply block pr-4 pl-24 sm:px-0 text-right sm:text-left sm:table-cell relative;
+}
+
+.data-table td:before {
+  content: attr(data-title);
+
+  @apply absolute left-4 font-bold text-primary-400;
+}
+
+@screen sm {
+  .data-table td:before {
+    content: none;
+  }
+}

@@ -21,6 +21,7 @@
     "prisma": "^2.19.0",
     "react": "17.0.1",
     "react-dom": "17.0.1",
+    "react-hook-form": "^6.15.5",
     "reflect-metadata": "^0.1.13",
     "uuid": "^8.3.2"
   },

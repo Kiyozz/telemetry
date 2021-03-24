@@ -9,6 +9,7 @@ dependencies:
   prisma: 2.19.0
   react: 17.0.1
   react-dom: 17.0.1_react@17.0.1
+  react-hook-form: 6.15.5_react@17.0.1
   reflect-metadata: 0.1.13
   uuid: 8.3.2
 devDependencies:
@@ -3407,6 +3408,14 @@ packages:
       react: 17.0.1
     resolution:
       integrity: sha512-6eV150oJZ9U2t9svnsspTMrWNyHc6chX0KzDeAOXftRa8bNeOKTTfCJ7KorIwenkHd2xqVTBTCZd79yk/lx/Ug==
+  /react-hook-form/6.15.5_react@17.0.1:
+    dependencies:
+      react: 17.0.1
+    dev: false
+    peerDependencies:
+      react: ^16.8.0 || ^17
+    resolution:
+      integrity: sha512-so2jEPYKdVk1olMo+HQ9D9n1hVzaPPFO4wsjgSeZ964R7q7CHsYRbVF0PGBi83FcycA5482WHflasdwLIUVENg==
   /react-is/16.13.1:
     resolution:
       integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
@@ -4384,6 +4393,7 @@ specifiers:
   prisma: ^2.19.0
   react: 17.0.1
   react-dom: 17.0.1
+  react-hook-form: ^6.15.5
   reflect-metadata: ^0.1.13
   tailwindcss: ^2.0.4
   ts-node: ^9.1.1

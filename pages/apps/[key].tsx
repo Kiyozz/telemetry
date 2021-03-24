@@ -1,7 +1,8 @@
 import is from '@sindresorhus/is'
 import { GetServerSideProps } from 'next'
 import Head from 'next/head'
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 
 import AppBar from '../../components/app-bar'
 import DataTable from '../../components/data-table'
@@ -28,13 +29,21 @@ interface Props {
     name: string
     events: Event[]
   }
-  stats: Stat[]
+  summary: Stat[]
   updatedAt: string
 }
 
-export default function TelemetryView({ app, stats, updatedAt }: Props) {
+export default function TelemetryView({ app, summary: initialSummary, updatedAt }: Props) {
   const [isDetailsActive, setDetailsActive] = useState(true)
   const [isSummaryActive, setSummaryActive] = useState(true)
+  const { register, handleSubmit } = useForm({ defaultValues: { type: '' } })
+  const [summary, setSummary] = useState(initialSummary)
+
+  useLayoutEffect(() => {
+    if (isSummaryActive) {
+      setSummary(() => initialSummary)
+    }
+  }, [isSummaryActive, initialSummary])
 
   const onClickSummaryToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.blur()
@@ -47,6 +56,10 @@ export default function TelemetryView({ app, stats, updatedAt }: Props) {
 
     setDetailsActive(a => !a)
   }
+
+  const onSummaryFormSubmit = handleSubmit(data => {
+    setSummary(initialSummary.filter(({ type }) => type.toLowerCase().includes(data.type.toLowerCase())))
+  })
 
   return (
     <>
@@ -94,12 +107,20 @@ export default function TelemetryView({ app, stats, updatedAt }: Props) {
           <div className="mt-4">
             <h2>Summary</h2>
 
-            {!is.emptyArray(stats) ? (
-              <DataTable
-                className="mt-4"
-                headers={['Type', 'Count', 'Properties']}
-                lines={stats.map(({ type, count, properties }) => [type, count, properties])}
-              />
+            <form className="flex inline-form" onSubmit={onSummaryFormSubmit}>
+              <input name="type" defaultValue="" ref={register} />
+
+              <button>Submit</button>
+            </form>
+
+            {!is.emptyArray(summary) ? (
+              <>
+                <DataTable
+                  className="mt-4"
+                  headers={['Type', 'Count', 'Properties']}
+                  lines={summary.map(({ type, count, properties }) => [type, count, properties])}
+                />
+              </>
             ) : (
               <p className="text-paragraph">No events yet</p>
             )}
@@ -212,11 +233,11 @@ ORDER BY
 
   const timerStats = time('apps/[key]/stats')
 
-  let stats = await prisma.$queryRaw<
+  let summary = await prisma.$queryRaw<
     Stat[]
   >`SELECT e.type, COUNT(e.type) as count, e.properties FROM events e WHERE e."appId" = ${app.id} GROUP BY e.type, e.properties ORDER BY count DESC, e.type`
 
-  stats = stats.map(stat => {
+  summary = summary.map(stat => {
     const props = JSON.parse(stat.properties)
 
     return { ...stat, properties: is.emptyObject(props) ? 'No properties' : JSON.stringify(props, null, 2) }
@@ -242,7 +263,7 @@ ORDER BY
     events,
   }
 
-  cache.setAppViaKey(key, JSON.stringify({ app: finalApp, stats, updatedAt: lastUpdatedAt }))
+  cache.setAppViaKey(key, JSON.stringify({ app: finalApp, summary, updatedAt: lastUpdatedAt } as Props))
 
   timerOther()
   timer()
@@ -253,7 +274,7 @@ ORDER BY
         name: app.name,
         events,
       },
-      stats,
+      summary,
       updatedAt: lastUpdatedAt,
     },
   }
