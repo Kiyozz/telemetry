@@ -31,12 +31,14 @@ interface Props {
     events: Event[]
   }
   summary: Summary[]
+  summaryWithoutProperties: Omit<Summary, 'properties'>[]
   updatedAt: string
 }
 
-export default function TelemetryView({ app, summary: initialSummary, updatedAt }: Props) {
+export default function TelemetryView({ app, summary: initialSummary, summaryWithoutProperties, updatedAt }: Props) {
   const [isDetailsActive, setDetailsActive] = useState(true)
   const [isSummaryActive, setSummaryActive] = useState(true)
+  const [isSummaryPropertiesActive, setSummaryPropertiesActive] = useState(true)
   const { register, handleSubmit } = useForm({ defaultValues: { type: '' } })
   const { register: detailsRegister, handleSubmit: handleDetailsSubmit } = useForm({ defaultValues: { type: '' } })
   const [summary, setSummary] = useState(initialSummary)
@@ -64,6 +66,12 @@ export default function TelemetryView({ app, summary: initialSummary, updatedAt 
     e.currentTarget.blur()
 
     setDetailsActive(a => !a)
+  }
+
+  const onClickSummaryPropertiesActive = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.blur()
+
+    setSummaryPropertiesActive(a => !a)
   }
 
   const onSubmitSummary = handleSubmit(data => {
@@ -121,21 +129,39 @@ export default function TelemetryView({ app, summary: initialSummary, updatedAt 
             <h2>Summary</h2>
 
             {initialSummary.length > 0 && (
-              <form className="inline-form" onSubmit={onSubmitSummary}>
-                <input name="type" defaultValue="" ref={register} />
+              <>
+                <form className="inline-form" onSubmit={onSubmitSummary}>
+                  <input name="type" defaultValue="" ref={register} />
 
-                <button>Submit</button>
-              </form>
+                  <button>Submit</button>
+                </form>
+                <div className="mt-2">
+                  <button
+                    onClick={onClickSummaryPropertiesActive}
+                    className={
+                      isSummaryPropertiesActive
+                        ? 'bg-primary-400'
+                        : 'bg-background hover:bg-background-lighter focus:bg-background-lighter'
+                    }
+                  >
+                    Properties
+                  </button>
+                </div>
+              </>
             )}
 
-            {!is.emptyArray(summary) ? (
-              <>
-                <DataTable
-                  className="mt-4"
-                  headers={['Type', 'Count', 'Properties']}
-                  lines={summary.map(({ type, count, properties }) => [type, count, properties])}
-                />
-              </>
+            {isSummaryPropertiesActive && !is.emptyArray(summary) ? (
+              <DataTable
+                className="mt-4"
+                headers={['Type', 'Count', 'Properties']}
+                lines={summary.map(({ type, count, properties }) => [type, count, properties])}
+              />
+            ) : !isSummaryPropertiesActive && !is.emptyArray(summaryWithoutProperties) ? (
+              <DataTable
+                className="mt-4"
+                headers={['Type', 'Count']}
+                lines={summaryWithoutProperties.map(({ type, count }) => [type, count])}
+              />
             ) : (
               <p className="text-paragraph">No events yet</p>
             )}
@@ -261,6 +287,9 @@ ORDER BY
   let summary = await prisma.$queryRaw<
     Summary[]
   >`SELECT e.type, COUNT(e.type) as count, e.properties FROM events e WHERE e."appId" = ${app.id} GROUP BY e.type, e.properties ORDER BY count DESC, e.type`
+  const summaryWithoutProperties = await prisma.$queryRaw<
+    Omit<Summary, 'properties'>[]
+  >`SELECT e.type, COUNT(e.type) as count FROM events e WHERE e."appId" = ${app.id} GROUP BY e.type ORDER BY count DESC, e.type`
 
   summary = summary.map(stat => {
     const props = JSON.parse(stat.properties)
@@ -288,7 +317,10 @@ ORDER BY
     events,
   }
 
-  cache.setAppViaKey(key, JSON.stringify({ app: finalApp, summary, updatedAt: lastUpdatedAt } as Props))
+  cache.setAppViaKey(
+    key,
+    JSON.stringify({ app: finalApp, summary, summaryWithoutProperties, updatedAt: lastUpdatedAt } as Props),
+  )
 
   timerOther()
   timer()
@@ -300,6 +332,7 @@ ORDER BY
         events,
       },
       summary,
+      summaryWithoutProperties,
       updatedAt: lastUpdatedAt,
     },
   }
