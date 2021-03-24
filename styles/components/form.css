@@ -1,3 +1,7 @@
+.inline-form {
+  @apply flex;
+}
+
 .inline-form * + * {
   @apply ml-4;
 }

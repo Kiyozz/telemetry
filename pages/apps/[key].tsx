@@ -1,7 +1,7 @@
 import is from '@sindresorhus/is'
 import { GetServerSideProps } from 'next'
 import Head from 'next/head'
-import { useLayoutEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import AppBar from '../../components/app-bar'
@@ -10,8 +10,9 @@ import cache from '../../helpers/cache'
 import prisma from '../../helpers/database'
 import formatDate from '../../helpers/formatDate'
 import time from '../../helpers/time'
+import { useLayoutEffect } from '../../hooks/use-layout-effect'
 
-interface Stat {
+interface Summary {
   type: string
   count: number
   properties: string
@@ -29,7 +30,7 @@ interface Props {
     name: string
     events: Event[]
   }
-  summary: Stat[]
+  summary: Summary[]
   updatedAt: string
 }
 
@@ -37,13 +38,21 @@ export default function TelemetryView({ app, summary: initialSummary, updatedAt 
   const [isDetailsActive, setDetailsActive] = useState(true)
   const [isSummaryActive, setSummaryActive] = useState(true)
   const { register, handleSubmit } = useForm({ defaultValues: { type: '' } })
+  const { register: detailsRegister, handleSubmit: handleDetailsSubmit } = useForm({ defaultValues: { type: '' } })
   const [summary, setSummary] = useState(initialSummary)
+  const [events, setEvents] = useState(app.events)
 
   useLayoutEffect(() => {
     if (isSummaryActive) {
       setSummary(() => initialSummary)
     }
   }, [isSummaryActive, initialSummary])
+
+  useLayoutEffect(() => {
+    if (isDetailsActive) {
+      setEvents(app.events)
+    }
+  }, [isDetailsActive, app.events])
 
   const onClickSummaryToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.blur()
@@ -57,8 +66,12 @@ export default function TelemetryView({ app, summary: initialSummary, updatedAt 
     setDetailsActive(a => !a)
   }
 
-  const onSummaryFormSubmit = handleSubmit(data => {
+  const onSubmitSummary = handleSubmit(data => {
     setSummary(initialSummary.filter(({ type }) => type.toLowerCase().includes(data.type.toLowerCase())))
+  })
+
+  const onSubmitDetails = handleDetailsSubmit(data => {
+    setEvents(app.events.filter(({ type }) => type.toLowerCase().includes(data.type.toLowerCase())))
   })
 
   return (
@@ -107,11 +120,13 @@ export default function TelemetryView({ app, summary: initialSummary, updatedAt 
           <div className="mt-4">
             <h2>Summary</h2>
 
-            <form className="flex inline-form" onSubmit={onSummaryFormSubmit}>
-              <input name="type" defaultValue="" ref={register} />
+            {initialSummary.length > 0 && (
+              <form className="inline-form" onSubmit={onSubmitSummary}>
+                <input name="type" defaultValue="" ref={register} />
 
-              <button>Submit</button>
-            </form>
+                <button>Submit</button>
+              </form>
+            )}
 
             {!is.emptyArray(summary) ? (
               <>
@@ -131,11 +146,19 @@ export default function TelemetryView({ app, summary: initialSummary, updatedAt 
           <div className="mt-4 flex flex-col">
             <h2>Details</h2>
 
-            {!is.emptyArray(app.events) ? (
+            {app.events.length > 0 && (
+              <form className="inline-form" onSubmit={onSubmitDetails}>
+                <input name="type" defaultValue="" ref={detailsRegister} />
+
+                <button>Submit</button>
+              </form>
+            )}
+
+            {!is.emptyArray(events) ? (
               <DataTable
                 className="mt-4"
                 headers={['Type', 'Time', 'Count', 'Properties']}
-                lines={app.events.map(({ type, count, event_created_at, properties }) => [
+                lines={events.map(({ type, count, event_created_at, properties }) => [
                   type,
                   event_created_at,
                   count,
@@ -195,7 +218,7 @@ export const getServerSideProps: GetServerSideProps<Props, { key: string }> = as
   }
 
   const timerCreatedAt = time('apps/[key]/created-at')
-  const { createdAt: lastCreatedAt } = await prisma.event.findFirst({
+  const lastEvent = await prisma.event.findFirst({
     select: {
       createdAt: true,
     },
@@ -207,6 +230,8 @@ export const getServerSideProps: GetServerSideProps<Props, { key: string }> = as
     },
     take: 1,
   })
+
+  const lastCreatedAt = lastEvent?.createdAt ?? null
   const lastUpdatedAt = formatDate(lastCreatedAt, { space: true })
 
   timerCreatedAt()
@@ -234,14 +259,14 @@ ORDER BY
   const timerStats = time('apps/[key]/stats')
 
   let summary = await prisma.$queryRaw<
-    Stat[]
+    Summary[]
   >`SELECT e.type, COUNT(e.type) as count, e.properties FROM events e WHERE e."appId" = ${app.id} GROUP BY e.type, e.properties ORDER BY count DESC, e.type`
 
   summary = summary.map(stat => {
     const props = JSON.parse(stat.properties)
 
     return { ...stat, properties: is.emptyObject(props) ? 'No properties' : JSON.stringify(props, null, 2) }
-  }) as Stat[]
+  }) as Summary[]
 
   timerStats()
 
