@@ -1,6 +1,7 @@
 import is from '@sindresorhus/is'
 import { GetServerSideProps } from 'next'
 import Head from 'next/head'
+import { useState } from 'react'
 
 import AppBar from '../../components/app-bar'
 import DataTable from '../../components/data-table'
@@ -32,6 +33,21 @@ interface Props {
 }
 
 export default function TelemetryView({ app, stats, updatedAt }: Props) {
+  const [isDetailsActive, setDetailsActive] = useState(true)
+  const [isSummaryActive, setSummaryActive] = useState(true)
+
+  const onClickSummaryToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.blur()
+
+    setSummaryActive(a => !a)
+  }
+
+  const onClickDetailsToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.blur()
+
+    setDetailsActive(a => !a)
+  }
+
   return (
     <>
       <Head>
@@ -45,25 +61,53 @@ export default function TelemetryView({ app, stats, updatedAt }: Props) {
           </>
         }
       >
-        <span className="hidden sm:inline">Updated at </span>
-        {updatedAt}
+        <div className="text-xs sm:text-lg">
+          <span className="hidden sm:inline">Updated at </span>
+          {updatedAt}
+        </div>
       </AppBar>
       <div className="px-4 pb-4 mt-16">
-        <div>
-          <h2>Number of events</h2>
-
-          {!is.emptyArray(stats) ? (
-            <DataTable
-              className="mt-4"
-              headers={['Type', 'Count', 'Properties']}
-              lines={stats.map(({ type, count, properties }) => [type, count, properties])}
-            />
-          ) : (
-            <p className="text-paragraph">No events yet</p>
-          )}
+        <div className="flex toolbar">
+          <button
+            onClick={onClickSummaryToggle}
+            className={
+              isSummaryActive
+                ? 'bg-primary-400'
+                : 'bg-background hover:bg-background-lighter focus:bg-background-lighter'
+            }
+          >
+            Summary
+          </button>
+          <button
+            onClick={onClickDetailsToggle}
+            className={
+              isDetailsActive
+                ? 'bg-primary-400'
+                : 'bg-background hover:bg-background-lighter focus:bg-background-lighter'
+            }
+          >
+            Details
+          </button>
         </div>
-        <div className="mt-4">
-          <div className="flex flex-col">
+
+        {isSummaryActive && (
+          <div className="mt-4">
+            <h2>Summary</h2>
+
+            {!is.emptyArray(stats) ? (
+              <DataTable
+                className="mt-4"
+                headers={['Type', 'Count', 'Properties']}
+                lines={stats.map(({ type, count, properties }) => [type, count, properties])}
+              />
+            ) : (
+              <p className="text-paragraph">No events yet</p>
+            )}
+          </div>
+        )}
+
+        {isDetailsActive && (
+          <div className="mt-4 flex flex-col">
             <h2>Details</h2>
 
             {!is.emptyArray(app.events) ? (
@@ -82,7 +126,9 @@ export default function TelemetryView({ app, stats, updatedAt }: Props) {
               <p className="text-paragraph">No events yet</p>
             )}
           </div>
-        </div>
+        )}
+
+        {!isSummaryActive && !isDetailsActive && <p className="text-lg mt-4">Nothing to display.</p>}
       </div>
     </>
   )

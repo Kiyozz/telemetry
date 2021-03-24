@@ -10,7 +10,11 @@ h2 {
 }
 
 button {
-  @apply text-lg;
+  @apply text-lg p-2 rounded bg-primary-400 hover:bg-primary-500 focus:bg-primary-600 focus:outline-none transition-colors;
+}
+
+.toolbar button + button {
+  @apply ml-2;
 }
 
 .break-anywhere {

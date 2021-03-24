@@ -6,9 +6,6 @@ module.exports = {
       fontFamily: {
         nova: ['Proxima Nova'],
       },
-      height: {
-        'screen-content': 'calc(100vh)',
-      },
       colors: {
         primary: {
           300: '#815eec',
