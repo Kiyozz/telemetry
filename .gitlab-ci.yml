@@ -5,14 +5,13 @@ services:
     alias: postgres
   - name: redis:6-alpine
     alias: redis
-    entrypoint: ['redis-server', '--requirepass', "${REDIS_PASSWORD}"]
 
 variables:
   POSTGRES_SSLMODE: disable
   POSTGRES_DATABASE: telemetry
   POSTGRES_PORT: 5432
   DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DATABASE}?schema=public&sslmode=${POSTGRES_SSLMODE}
-  REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379
+  REDIS_URL: redis://default@redis:6379
 
 stages:
   - build
