@@ -1,22 +1,38 @@
-# This file is a template, and might need editing before it works on your project.
-# Official framework image. Look for the different tagged releases at:
-# https://hub.docker.com/r/library/node/tags/
 image: node:15-alpine
 
-# This folder is cached between builds
-# http://docs.gitlab.com/ee/ci/yaml/README.html#cache
+services:
+  - name: postgres:12-alpine
+    alias: postgres
+  - name: redis:6-alpine
+    alias: redis
+    entrypoint: ['redis-server', '--requirepass', "${REDIS_PASSWORD}"]
+
+variables:
+  POSTGRES_SSLMODE: disable
+  POSTGRES_DATABASE: telemetry
+  POSTGRES_PORT: 5432
+  DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DATABASE}?schema=public&sslmode=${POSTGRES_SSLMODE}
+  REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379
+
+stages:
+  - build
+  - deploy
+
 cache:
   paths:
     - ~/.pnpm-store
 
-before_script:
-  - npm i -g pnpm
-  - pnpm i
+default:
+  before_script:
+    - npm i -g pnpm
+    - pnpm i
 
 lint:
+  stage: build
   script:
     - pnpm lint
 
 build:
+  stage: build
   script:
     - pnpm build
