@@ -20,13 +20,13 @@ stages:
 
 cache:
   paths:
-    - /builds/.pnpm-store
+    - ./.pnpm-store
 
 default:
   before_script:
     - npm i -g pnpm
     - pnpm -v
-    - pnpm i
+    - pnpm i --virtual-store-dir ./.pnpm-store
     - pnpm prisma:generate
 
 build:
