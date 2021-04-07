@@ -18,17 +18,12 @@ stages:
   - build
   - deploy
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - .pnpm-store
-    - .next/cache
-
-default:
-  before_script:
+setup:
+  stage: build
+  script:
     - npm i -g pnpm
     - pnpm -v
-    - pnpm i --store-dir .pnpm-store --frozen-lockfile
+    - pnpm i --frozen-lockfile
     - pnpm prisma:generate
 
 build:
