@@ -18,9 +18,9 @@ stages:
   - build
   - deploy
 
-cache:
-  paths:
-    - ~/.pnpm-store
+#cache:
+#  paths:
+#    - ~/.pnpm-store
 
 default:
   before_script:
