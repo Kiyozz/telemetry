@@ -19,9 +19,10 @@ stages:
   - deploy
 
 cache:
-  key: "$CI_JOB_STAGE"
+  key: ${CI_COMMIT_REF_SLUG}
   paths:
     - .pnpm-store
+    - .next/cache
 
 default:
   before_script:
