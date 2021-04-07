@@ -35,3 +35,8 @@ build:
   stage: build
   script:
     - pnpm build
+
+deploy:
+  stage: deploy
+  script:
+    - echo "hello world!"
