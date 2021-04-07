@@ -18,17 +18,13 @@ stages:
   - build
   - deploy
 
-setup:
+build:
   stage: build
   script:
     - npm i -g pnpm
     - pnpm -v
     - pnpm i --frozen-lockfile
     - pnpm prisma:generate
-
-build:
-  stage: build
-  script:
     - pnpm build
 
 deploy:
