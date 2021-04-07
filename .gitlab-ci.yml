@@ -18,14 +18,16 @@ stages:
   - build
   - deploy
 
-#cache:
-#  paths:
-#    - ~/.pnpm-store
+cache:
+  paths:
+    - ~/.pnpm-store
 
 default:
   before_script:
     - npm i -g pnpm
+    - pnpm -v
     - pnpm i
+    - pnpm prisma:generate
 
 lint:
   stage: build
