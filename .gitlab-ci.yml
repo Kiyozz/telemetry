@@ -19,14 +19,15 @@ stages:
   - deploy
 
 cache:
+  key: "$CI_JOB_STAGE"
   paths:
-    - ./.pnpm-store
+    - .pnpm-store
 
 default:
   before_script:
     - npm i -g pnpm
     - pnpm -v
-    - pnpm i --store-dir ./.pnpm-store
+    - pnpm i --store-dir .pnpm-store --frozen-lockfile
     - pnpm prisma:generate
 
 build:
