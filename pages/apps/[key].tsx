@@ -295,7 +295,7 @@ GROUP BY
          e.properties,
          event_created_at
 ORDER BY
-    event_created_at DESC,
+    e.created_at DESC,
     count DESC`)
 
   timerEvents()
