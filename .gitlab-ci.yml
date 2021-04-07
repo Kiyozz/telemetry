@@ -20,7 +20,7 @@ stages:
 
 cache:
   paths:
-    - ~/.pnpm-store
+    - /builds/.pnpm-store
 
 default:
   before_script:
@@ -28,11 +28,6 @@ default:
     - pnpm -v
     - pnpm i
     - pnpm prisma:generate
-
-lint:
-  stage: build
-  script:
-    - pnpm lint
 
 build:
   stage: build
