@@ -283,20 +283,22 @@ export const getServerSideProps: GetServerSideProps<Props, { key: string }> = as
   const timerEvents = time('apps/[key]/events')
 
   const result = await prisma.$queryRaw<Event[]>(`SELECT
-       e.type,
-       e.properties,
-       date_trunc('minute', e.created_at) event_created_at,
-       COUNT(*) count
+  e.type,
+  e.properties,
+  date_trunc('minute', e.created_at) event_created_at,
+  COUNT(*) count
 FROM
-     events e
-WHERE e."appId" = '${app.id}'
+  events e
+WHERE
+  e."appId" = '${app.id}'
 GROUP BY
-         e.type,
-         e.properties,
-         event_created_at
+  e.created_at,
+  e.type,
+  e.properties,
+  event_created_at
 ORDER BY
-    e.created_at DESC,
-    count DESC`)
+  e.created_at DESC,
+  count DESC`)
 
   timerEvents()
 
