@@ -1,7 +1,7 @@
 import is from '@sindresorhus/is'
 import { GetStaticPaths, GetStaticProps } from 'next'
 import Head from 'next/head'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import AppBar from '../../components/app-bar'
@@ -30,6 +30,7 @@ interface Props {
     events: Event[] | null
   }
   summary: Summary[]
+  summaryWithoutProperties: Omit<Summary, 'properties'>[]
   updatedAt: string
 }
 
@@ -37,12 +38,12 @@ function filterSearch<T extends Pick<Summary, 'type'>>(array: T[], query: string
   return array.filter(({ type }) => type.toLowerCase().includes(query.toLowerCase()))
 }
 
-function removePropertiesFromSummaries(summaries: Summary[]): Omit<Summary, 'properties'>[] {
-  return summaries.map(({ type, count }) => ({ type, count }))
-}
-
-export default function TelemetryView({ app, summary: initialSummary, updatedAt }: Props) {
-  const initialSummaryWithoutProperties = useMemo(() => removePropertiesFromSummaries(initialSummary), [initialSummary])
+export default function TelemetryView({
+  app,
+  summary: initialSummary,
+  summaryWithoutProperties: initialSummaryWithoutProperties,
+  updatedAt,
+}: Props) {
   const [isDetailsActive, setDetailsActive] = useState(!is.null_(app.events))
   const [isSummaryActive, setSummaryActive] = useState(true)
   const [isSummaryPropertiesActive, setSummaryPropertiesActive] = useState(true)
@@ -281,17 +282,19 @@ export const getStaticProps: GetStaticProps<Props> = async context => {
 
   const timerStats = time('apps/[key]/stats')
 
-  let summary = await prisma.$queryRaw<Summary[]>`SELECT
-  e.type,
-  COUNT(e.type) as count,
-  e.properties
+  let summary = await prisma.$queryRaw<Summary[]>`SELECT e.type, COUNT(e.type) as count, e.properties
 FROM events e
-WHERE
-  e."appId" = ${app.id}
-GROUP BY
-  e.type, e.properties
-ORDER BY
-  count DESC, e.type`
+WHERE e."appId" = ${app.id}
+GROUP BY e.type, e.properties
+ORDER BY count DESC, e.type`
+
+  const summaryWithoutProperties = await prisma.$queryRaw<
+    Omit<Summary, 'properties'>[]
+  >`SELECT e.type, COUNT(e.type) as count
+FROM events e
+WHERE e."appId" = ${app.id}
+GROUP BY e.type
+ORDER BY count DESC, e.type`
 
   summary = summary.map(stat => {
     const props = JSON.parse(stat.properties)
@@ -350,6 +353,7 @@ ORDER BY
         events,
       },
       summary,
+      summaryWithoutProperties,
       updatedAt: lastUpdatedAt,
     },
     revalidate: 7200,
