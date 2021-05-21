@@ -1,7 +1,7 @@
 import is from '@sindresorhus/is'
 import { GetStaticPaths, GetStaticProps } from 'next'
 import Head from 'next/head'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import AppBar from '../../components/app-bar'
@@ -27,10 +27,9 @@ interface Event {
 interface Props {
   app: {
     name: string
-    events: Event[]
+    events: Event[] | null
   }
   summary: Summary[]
-  summaryWithoutProperties: Omit<Summary, 'properties'>[]
   updatedAt: string
 }
 
@@ -38,20 +37,20 @@ function filterSearch<T extends Pick<Summary, 'type'>>(array: T[], query: string
   return array.filter(({ type }) => type.toLowerCase().includes(query.toLowerCase()))
 }
 
-export default function TelemetryView({
-  app,
-  summary: initialSummary,
-  summaryWithoutProperties: initialSummaryWithoutProperties,
-  updatedAt,
-}: Props) {
-  const [isDetailsActive, setDetailsActive] = useState(true)
+function removePropertiesFromSummaries(summaries: Summary[]): Omit<Summary, 'properties'>[] {
+  return summaries.map(({ type, count }) => ({ type, count }))
+}
+
+export default function TelemetryView({ app, summary: initialSummary, updatedAt }: Props) {
+  const initialSummaryWithoutProperties = useMemo(() => removePropertiesFromSummaries(initialSummary), [initialSummary])
+  const [isDetailsActive, setDetailsActive] = useState(!is.null_(app.events))
   const [isSummaryActive, setSummaryActive] = useState(true)
   const [isSummaryPropertiesActive, setSummaryPropertiesActive] = useState(true)
   const { register, handleSubmit, getValues } = useForm({ defaultValues: { type: '' } })
   const { register: detailsRegister, handleSubmit: handleDetailsSubmit } = useForm({ defaultValues: { type: '' } })
   const [summary, setSummary] = useState(initialSummary)
   const [summaryWithoutProperties, setSummaryWithoutProperties] = useState(initialSummaryWithoutProperties)
-  const [events, setEvents] = useState(app.events)
+  const [events, setEvents] = useState<Event[] | undefined>(app.events)
 
   useLayoutEffect(() => {
     if (isSummaryActive) {
@@ -96,7 +95,7 @@ export default function TelemetryView({
   })
 
   const onSubmitDetails = handleDetailsSubmit(data => {
-    setEvents(app.events.filter(({ type }) => type.toLowerCase().includes(data.type.toLowerCase())))
+    setEvents(app.events?.filter(({ type }) => type.toLowerCase().includes(data.type.toLowerCase())))
   })
 
   return (
@@ -129,16 +128,18 @@ export default function TelemetryView({
           >
             Summary
           </button>
-          <button
-            onClick={onClickDetailsToggle}
-            className={
-              isDetailsActive
-                ? 'bg-primary-400'
-                : 'bg-background hover:bg-background-lighter focus:bg-background-lighter'
-            }
-          >
-            Details
-          </button>
+          {!is.null_(events) && (
+            <button
+              onClick={onClickDetailsToggle}
+              className={
+                isDetailsActive
+                  ? 'bg-primary-400'
+                  : 'bg-background hover:bg-background-lighter focus:bg-background-lighter'
+              }
+            >
+              Details
+            </button>
+          )}
         </div>
 
         {isSummaryActive && (
@@ -185,11 +186,11 @@ export default function TelemetryView({
           </div>
         )}
 
-        {isDetailsActive && (
+        {isDetailsActive && !is.null_(events) && (
           <div className="mt-4 flex flex-col">
             <h2>Details</h2>
 
-            {app.events.length > 0 && (
+            {app.events?.length > 0 && (
               <form className="inline-form" onSubmit={onSubmitDetails}>
                 <input name="type" defaultValue="" {...detailsRegister('type')} />
 
@@ -278,9 +279,33 @@ export const getStaticProps: GetStaticProps<Props> = async context => {
 
   timerCreatedAt()
 
-  const timerEvents = time('apps/[key]/events')
+  const timerStats = time('apps/[key]/stats')
 
-  const result = await prisma.$queryRaw<Event[]>(`SELECT
+  let summary = await prisma.$queryRaw<Summary[]>`SELECT
+  e.type,
+  COUNT(e.type) as count,
+  e.properties
+FROM events e
+WHERE
+  e."appId" = ${app.id}
+GROUP BY
+  e.type, e.properties
+ORDER BY
+  count DESC, e.type`
+
+  summary = summary.map(stat => {
+    const props = JSON.parse(stat.properties)
+
+    return { ...stat, properties: is.emptyObject(props) ? 'No properties' : JSON.stringify(props, null, 2) }
+  }) as Summary[]
+
+  timerStats()
+
+  let events: Event[] | null = null
+
+  if (process.env.NEXT_APP_DETAILS_EVENTS === '1') {
+    const timerEvents = time('apps/[key]/events')
+    const result = await prisma.$queryRaw<Event[]>(`SELECT
   e.type,
   e.properties,
   date_trunc('minute', e.created_at) event_created_at,
@@ -298,36 +323,22 @@ ORDER BY
   e.created_at DESC,
   count DESC`)
 
-  timerEvents()
+    timerEvents()
 
-  const timerStats = time('apps/[key]/stats')
+    events = result.map((e): Event => {
+      const properties = JSON.parse(e.properties as string)
 
-  let summary = await prisma.$queryRaw<
-    Summary[]
-  >`SELECT e.type, COUNT(e.type) as count, e.properties FROM events e WHERE e."appId" = ${app.id} GROUP BY e.type, e.properties ORDER BY count DESC, e.type`
-  const summaryWithoutProperties = await prisma.$queryRaw<
-    Omit<Summary, 'properties'>[]
-  >`SELECT e.type, COUNT(e.type) as count FROM events e WHERE e."appId" = ${app.id} GROUP BY e.type ORDER BY count DESC, e.type`
-
-  summary = summary.map(stat => {
-    const props = JSON.parse(stat.properties)
-
-    return { ...stat, properties: is.emptyObject(props) ? 'No properties' : JSON.stringify(props, null, 2) }
-  }) as Summary[]
-
-  timerStats()
+      return {
+        ...e,
+        properties: is.emptyObject(properties) ? 'No properties' : JSON.stringify(properties, null, 2),
+        event_created_at: formatDate(e.event_created_at, { eol: true }),
+      }
+    })
+  } else {
+    console.log('--- details feature is disabled ---')
+  }
 
   const timerOther = time('apps/[key]/other')
-
-  const events = result.map((e): Event => {
-    const properties = JSON.parse(e.properties as string)
-
-    return {
-      ...e,
-      properties: is.emptyObject(properties) ? 'No properties' : JSON.stringify(properties, null, 2),
-      event_created_at: formatDate(e.event_created_at, { eol: true }),
-    }
-  })
 
   timerOther()
   timer()
@@ -339,7 +350,6 @@ ORDER BY
         events,
       },
       summary,
-      summaryWithoutProperties,
       updatedAt: lastUpdatedAt,
     },
     revalidate: 7200,
