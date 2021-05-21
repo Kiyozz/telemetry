@@ -1,12 +1,11 @@
 import is from '@sindresorhus/is'
-import { GetServerSideProps } from 'next'
+import { GetStaticPaths, GetStaticProps } from 'next'
 import Head from 'next/head'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import AppBar from '../../components/app-bar'
 import DataTable from '../../components/data-table'
-import cache from '../../helpers/cache'
 import prisma from '../../helpers/database'
 import formatDate from '../../helpers/formatDate'
 import time from '../../helpers/time'
@@ -149,7 +148,7 @@ export default function TelemetryView({
             {initialSummary.length > 0 && (
               <>
                 <form className="inline-form" onSubmit={onSubmitSummary}>
-                  <input name="type" defaultValue="" ref={register} />
+                  <input name="type" defaultValue="" {...register('type')} />
 
                   <button>Submit</button>
                 </form>
@@ -192,7 +191,7 @@ export default function TelemetryView({
 
             {app.events.length > 0 && (
               <form className="inline-form" onSubmit={onSubmitDetails}>
-                <input name="type" defaultValue="" ref={detailsRegister} />
+                <input name="type" defaultValue="" {...detailsRegister('type')} />
 
                 <button>Submit</button>
               </form>
@@ -222,25 +221,24 @@ export default function TelemetryView({
   )
 }
 
-export const getServerSideProps: GetServerSideProps<Props, { key: string }> = async context => {
+export const getStaticPaths: GetStaticPaths = async () => {
+  const apps = await prisma.app.findMany({ select: { key: true } })
+
+  return {
+    paths: apps.map(app => ({
+      params: { key: app.key },
+    })),
+    fallback: 'blocking',
+  }
+}
+
+export const getStaticProps: GetStaticProps<Props> = async context => {
   console.log('--------')
   const timer = time('apps/[key]')
-  const { key } = context.params
-  const timerCache = time('apps/[key]/cache')
-  const cached = await cache.getAppViaKey<string>(key)
-
-  timerCache()
-
-  if (is.string(cached)) {
-    timer()
-    console.log('apps/[key]/cached')
-
-    return {
-      props: JSON.parse(cached) as Props,
-    }
-  }
+  const key = context.params.key as string
 
   const timerGetApp = time('apps/[key]/app')
+
   const app = await prisma.app.findUnique({
     where: {
       key,
@@ -321,26 +319,15 @@ ORDER BY
 
   const timerOther = time('apps/[key]/other')
 
-  const events = result.map(
-    (e): Event => {
-      const properties = JSON.parse(e.properties as string)
+  const events = result.map((e): Event => {
+    const properties = JSON.parse(e.properties as string)
 
-      return {
-        ...e,
-        properties: is.emptyObject(properties) ? 'No properties' : JSON.stringify(properties, null, 2),
-        event_created_at: formatDate(e.event_created_at, { eol: true }),
-      }
-    },
-  )
-  const finalApp = {
-    name: app.name,
-    events,
-  }
-
-  cache.setAppViaKey(
-    key,
-    JSON.stringify({ app: finalApp, summary, summaryWithoutProperties, updatedAt: lastUpdatedAt } as Props),
-  )
+    return {
+      ...e,
+      properties: is.emptyObject(properties) ? 'No properties' : JSON.stringify(properties, null, 2),
+      event_created_at: formatDate(e.event_created_at, { eol: true }),
+    }
+  })
 
   timerOther()
   timer()
@@ -355,5 +342,6 @@ ORDER BY
       summaryWithoutProperties,
       updatedAt: lastUpdatedAt,
     },
+    revalidate: 7200,
   }
 }

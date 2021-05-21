@@ -2,7 +2,6 @@ import is from '@sindresorhus/is'
 
 import { PostEvent } from '../../../../dto/events/dto'
 import createApi, { createNotFound } from '../../../../helpers/api'
-import cache from '../../../../helpers/cache'
 import prisma from '../../../../helpers/database'
 import validation from '../../../../helpers/middleware/validation'
 
@@ -20,8 +19,6 @@ api.post(validation(PostEvent), async (req, res) => {
   const event = await prisma.event.create({
     data: { appId: app.id, type: dto.type, properties: dto.propertiesString },
   })
-
-  cache.deleteAppViaKey(dto.appKey)
 
   res.status(201).json({ data: event })
 })

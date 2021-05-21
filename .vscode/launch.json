@@ -5,7 +5,7 @@
       "name": "telemetry@dev",
       "request": "launch",
       "runtimeArgs": ["run-script", "dev"],
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "skipFiles": ["<node_internals>/**"],
       "type": "pwa-node"
     },
@@ -14,7 +14,7 @@
       "request": "launch",
       "runtimeArgs": ["run-script", "start"],
       "preLaunchTask": "telemetry@build",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "skipFiles": ["<node_internals>/**"],
       "type": "pwa-node"
     }

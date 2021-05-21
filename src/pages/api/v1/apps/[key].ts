@@ -2,7 +2,6 @@ import is from '@sindresorhus/is'
 
 import { PutApp } from '../../../../dto/apps/dto'
 import createApi, { createNotFound } from '../../../../helpers/api'
-import cache from '../../../../helpers/cache'
 import prisma from '../../../../helpers/database'
 import validation from '../../../../helpers/middleware/validation'
 
@@ -17,9 +16,6 @@ api.put(validation(PutApp), async (req, res) => {
     createNotFound(res, `${key} not found`)
     return
   }
-
-  cache.deleteAllApps()
-  cache.deleteAppViaKey(app.key)
 
   res.status(200).json({ data: app })
 })
