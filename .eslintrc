@@ -11,7 +11,8 @@
     "plugin:prettier/recommended",
     "prettier",
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "next"
   ],
   "rules": {
     "@typescript-eslint/no-var-requires": "off",

@@ -1,11 +1,11 @@
 interface DataTableProps {
   className?: string
   headers: string[]
-  lines: (string | number)[][]
+  lines?: (string | number)[][]
   compact?: boolean
 }
 
-export default function DataTable({ className, headers, lines, compact = false }: DataTableProps) {
+export default function DataTable({ className, headers, lines = [], compact = false }: DataTableProps) {
   return (
     <div className={`data-table-wrap ${className ?? ''}`.trim()}>
       <table className={`data-table ${compact ? 'compact' : ''}`.trim()}>

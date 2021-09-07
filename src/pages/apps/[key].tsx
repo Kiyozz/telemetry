@@ -1,6 +1,7 @@
 import is from '@sindresorhus/is'
 import { GetStaticPaths, GetStaticProps } from 'next'
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -25,10 +26,12 @@ interface Event {
 }
 
 interface Props {
-  app: {
-    name: string
-    events: Event[] | null
-  }
+  app:
+    | {
+        name: string
+        events: Event[] | null
+      }
+    | undefined
   summary: Summary[]
   summaryWithoutProperties: Omit<Summary, 'properties'>[]
   updatedAt: string
@@ -44,14 +47,15 @@ export default function TelemetryView({
   summaryWithoutProperties: initialSummaryWithoutProperties,
   updatedAt,
 }: Props) {
-  const [isDetailsActive, setDetailsActive] = useState(!is.null_(app.events))
+  const router = useRouter()
+  const [isDetailsActive, setDetailsActive] = useState(!is.null_(app?.events ?? null))
   const [isSummaryActive, setSummaryActive] = useState(true)
   const [isSummaryPropertiesActive, setSummaryPropertiesActive] = useState(true)
   const { register, handleSubmit, getValues } = useForm({ defaultValues: { type: '' } })
   const { register: detailsRegister, handleSubmit: handleDetailsSubmit } = useForm({ defaultValues: { type: '' } })
   const [summary, setSummary] = useState(initialSummary)
   const [summaryWithoutProperties, setSummaryWithoutProperties] = useState(initialSummaryWithoutProperties)
-  const [events, setEvents] = useState<Event[] | undefined>(app.events)
+  const [events, setEvents] = useState<Event[] | undefined>(app?.events ?? undefined)
 
   useLayoutEffect(() => {
     if (isSummaryActive) {
@@ -61,9 +65,9 @@ export default function TelemetryView({
 
   useLayoutEffect(() => {
     if (isDetailsActive) {
-      setEvents(app.events)
+      setEvents(app?.events ?? undefined)
     }
-  }, [isDetailsActive, app.events])
+  }, [isDetailsActive, app])
 
   const onClickSummaryToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.currentTarget.blur()
@@ -96,19 +100,21 @@ export default function TelemetryView({
   })
 
   const onSubmitDetails = handleDetailsSubmit(data => {
-    setEvents(app.events?.filter(({ type }) => type.toLowerCase().includes(data.type.toLowerCase())))
+    setEvents(app?.events?.filter(({ type }) => type.toLowerCase().includes(data.type.toLowerCase())))
   })
+
+  if (router.isFallback) return null
 
   return (
     <>
       <Head>
-        <title>Telemetry {app.name}</title>
+        <title>Telemetry {app?.name ?? 'Name not defined'}</title>
       </Head>
       <AppBar
         title={
           <>
             <span className="hidden sm:inline">Application </span>
-            {app.name}
+            {app?.name ?? 'Name not defined'}
           </>
         }
       >
@@ -150,7 +156,7 @@ export default function TelemetryView({
             {initialSummary.length > 0 && (
               <>
                 <form className="inline-form" onSubmit={onSubmitSummary}>
-                  <input name="type" defaultValue="" {...register('type')} />
+                  <input defaultValue="" {...register('type')} />
 
                   <button>Submit</button>
                 </form>
@@ -191,9 +197,9 @@ export default function TelemetryView({
           <div className="mt-4 flex flex-col">
             <h2>Details</h2>
 
-            {app.events?.length > 0 && (
+            {(app?.events?.length ?? 0) > 0 && (
               <form className="inline-form" onSubmit={onSubmitDetails}>
-                <input name="type" defaultValue="" {...detailsRegister('type')} />
+                <input defaultValue="" {...detailsRegister('type')} />
 
                 <button>Submit</button>
               </form>
@@ -203,7 +209,7 @@ export default function TelemetryView({
               <DataTable
                 className="mt-4"
                 headers={['Type', 'Time', 'Count', 'Properties']}
-                lines={events.map(({ type, count, event_created_at, properties }) => [
+                lines={events?.map(({ type, count, event_created_at, properties }) => [
                   type,
                   event_created_at,
                   count,
@@ -230,14 +236,14 @@ export const getStaticPaths: GetStaticPaths = async () => {
     paths: apps.map(app => ({
       params: { key: app.key },
     })),
-    fallback: 'blocking',
+    fallback: true,
   }
 }
 
 export const getStaticProps: GetStaticProps<Props> = async context => {
   console.log('--------')
   const timer = time('apps/[key]')
-  const key = context.params.key as string
+  const key = context.params?.key as string
 
   const timerGetApp = time('apps/[key]/app')
 

@@ -1,9 +1,9 @@
 import is from '@sindresorhus/is'
 import { ValidationError } from 'class-validator'
 
-function formatErrors(error: ValidationError) {
-  if (is.undefined(error.children) || is.nonEmptyArray(error.children)) {
-    return error.children.map(e => formatErrors(e))
+function formatErrors(error: ValidationError): Record<string, unknown> | Record<string, unknown>[] {
+  if (!is.undefined(error.children) && is.nonEmptyArray(error.children)) {
+    return error.children.map(e => formatErrors(e)).flat()
   }
 
   return {
