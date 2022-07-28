@@ -103,12 +103,14 @@ export default function TelemetryView({
     setEvents(app?.events?.filter(({ type }) => type.toLowerCase().includes(data.type.toLowerCase())))
   })
 
-  if (router.isFallback) return null
+  if (router.isFallback) return <div>Loading...</div>
+
+  const title = `Telemetry - ${app?.name ?? 'Unknown'}`
 
   return (
     <>
       <Head>
-        <title>Telemetry {app?.name ?? 'Name not defined'}</title>
+        <title>{title}</title>
       </Head>
       <AppBar
         title={
@@ -294,7 +296,7 @@ WHERE e."appId" = ${app.id}
 GROUP BY e.type, e.properties
 ORDER BY count DESC, e.type`
 
-  const summaryWithoutProperties = await prisma.$queryRaw<
+  let summaryWithoutProperties = await prisma.$queryRaw<
     Omit<Summary, 'properties'>[]
   >`SELECT e.type, COUNT(e.type) as count
 FROM events e
@@ -302,11 +304,19 @@ WHERE e."appId" = ${app.id}
 GROUP BY e.type
 ORDER BY count DESC, e.type`
 
-  summary = summary.map(stat => {
+  summary = summary.map<Summary>(stat => {
     const props = JSON.parse(stat.properties)
 
-    return { ...stat, properties: is.emptyObject(props) ? 'No properties' : JSON.stringify(props, null, 2) }
-  }) as Summary[]
+    return {
+      ...stat,
+      count: Number(stat.count),
+      properties: is.emptyObject(props) ? 'No properties' : JSON.stringify(props, null, 2),
+    }
+  })
+
+  summaryWithoutProperties = summaryWithoutProperties.map((stat: Omit<Summary, 'properties'>) => {
+    return { ...stat, count: Number(stat.count) }
+  })
 
   timerStats()
 
@@ -314,7 +324,7 @@ ORDER BY count DESC, e.type`
 
   if (process.env.NEXT_APP_DETAILS_EVENTS === '1') {
     const timerEvents = time('apps/[key]/events')
-    const result = await prisma.$queryRaw<Event[]>(`SELECT
+    const result = await prisma.$queryRaw<Event[]>`SELECT
   e.type,
   e.properties,
   date_trunc('minute', e.created_at) event_created_at,
@@ -322,7 +332,7 @@ ORDER BY count DESC, e.type`
 FROM
   events e
 WHERE
-  e."appId" = '${app.id}'
+  e."appId" = ${app.id}
 GROUP BY
   e.created_at,
   e.type,
@@ -330,7 +340,7 @@ GROUP BY
   event_created_at
 ORDER BY
   e.created_at DESC,
-  count DESC`)
+  count DESC`
 
     timerEvents()
 
@@ -339,6 +349,7 @@ ORDER BY
 
       return {
         ...e,
+        count: Number(e.count),
         properties: is.emptyObject(properties) ? 'No properties' : JSON.stringify(properties, null, 2),
         event_created_at: formatDate(e.event_created_at, { eol: true }),
       }
@@ -347,10 +358,8 @@ ORDER BY
     console.log('--- details feature is disabled ---')
   }
 
-  const timerOther = time('apps/[key]/other')
-
-  timerOther()
   timer()
+  console.log('--------')
 
   return {
     props: {

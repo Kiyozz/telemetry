@@ -1,11 +1,10 @@
+/**  @type {import('tailwindcss').Config} */
 module.exports = {
-  mode: 'jit',
-  purge: ['./src/pages/**/*.{ts,tsx}', './src/components/**/*.{ts,tsx}'],
-  darkMode: false, // or 'media' or 'class'
+  content: ['./src/pages/**/*.{ts,tsx}', './src/components/**/*.{ts,tsx}'],
   theme: {
     extend: {
       fontFamily: {
-        nova: ['Proxima Nova'],
+        nova: ['Proxima Nova', 'sans-serif'],
       },
       colors: {
         primary: {
