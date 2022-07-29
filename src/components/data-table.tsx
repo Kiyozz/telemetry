@@ -1,3 +1,5 @@
+import cx from 'classnames'
+
 interface DataTableProps {
   className?: string
   headers: string[]
@@ -7,8 +9,8 @@ interface DataTableProps {
 
 export default function DataTable({ className, headers, lines = [], compact = false }: DataTableProps) {
   return (
-    <div className={`data-table-wrap ${className ?? ''}`.trim()}>
-      <table className={`data-table ${compact ? 'compact' : ''}`.trim()}>
+    <div className={cx('data-table-wrap', className)}>
+      <table className={cx('data-table', compact && 'compact')}>
         <thead>
           <tr>
             {headers.map((header, index) => (

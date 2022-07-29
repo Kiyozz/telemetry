@@ -1,91 +1,153 @@
 .data-table-wrap {
-  @apply sm:rounded-md overflow-hidden;
+  overflow: hidden;
 }
 
 .data-table {
-  @apply block sm:table w-full;
+  display: block;
+  width: 100%;
 }
 
 .data-table tbody {
-  @apply block sm:table-row-group;
+  display: block;
 }
 
 .data-table td,
 .data-table th {
-  @apply text-left py-5;
+  text-align: left;
+  padding-top: theme('padding.5');
+  padding-bottom: theme('padding.5');
 }
 
 .data-table tbody tr {
-  @apply bg-background-lighter;
+  background-color: theme('backgroundColor.background-lighter');
 }
 
 .data-table.compact td {
-  @apply py-1.5;
-}
-
-.data-table th:first-child,
-.data-table td:first-child {
-  @apply sm:pl-5 md:pl-10 md:w-1/6;
-}
-
-.data-table th:last-child,
-.data-table td:last-child {
-  @apply sm:pr-5 md:pr-10 md:w-1/6;
-}
-
-.data-table th:first-child,
-.data-table td:first-child,
-.data-table th:nth-child(2),
-.data-table td:nth-child(2),
-.data-table th:nth-child(3),
-.data-table td:nth-child(3),
-.data-table th:nth-child(4),
-.data-table td:nth-child(4),
-.data-table th:last-child,
-.data-table td:last-child {
-  @apply sm:w-1/6;
+  padding-top: theme('padding[1.5]');
+  padding-bottom: theme('padding[1.5]');
 }
 
 .data-table td:not(:first-child):not(:last-child) {
-  @apply pl-4 sm:pl-0;
+  padding-left: theme('padding.4');
 }
 
 .data-table td:last-child {
   word-wrap: anywhere;
 }
 
-.data-table tbody tr:not(:last-child) td {
-  @apply sm:border-b sm:border-secondary;
-}
-
 .data-table thead {
-  @apply hidden sm:table-header-group;
+  display: none;
 }
 
 .data-table thead tr {
-  @apply bg-primary-400 text-lg;
+  background-color: theme('backgroundColor.primary.400');
+  font-size: theme('fontSize.lg');
+  line-height: theme('lineHeight.7');
 }
 
 .data-table tr {
-  @apply block mb-8 rounded sm:rounded-none sm:mb-0 sm:table-row;
+  display: block;
+  margin-bottom: theme('margin.8');
+  border-radius: theme('borderRadius.DEFAULT');
 }
 
 .data-table tr:last-child {
-  @apply mb-0;
+  margin-bottom: 0;
 }
 
 .data-table td {
-  @apply block pr-4 pl-24 sm:px-0 text-right sm:text-left sm:table-cell relative;
+  display: block;
+  padding-right: theme('padding.4');
+  padding-left: theme('padding.24');
+  text-align: right;
+  position: relative;
 }
 
 .data-table td:before {
   content: attr(data-title);
-
-  @apply absolute left-4 font-bold text-primary-400;
+  position: absolute;
+  left: theme('spacing.4');
+  font-weight: bold;
+  color: theme('textColor.primary.400');
 }
 
 @screen sm {
   .data-table td:before {
     content: none;
+  }
+
+  .data-table td {
+    padding-left: 0;
+    padding-right: 0;
+    text-align: left;
+    display: table-cell;
+  }
+
+  .data-table tr {
+    border-radius: 0;
+    margin-bottom: 0;
+    display: table-row;
+  }
+
+  .data-table thead {
+    display: table-header-group;
+  }
+
+  .data-table tbody tr:not(:last-child) td {
+    border-bottom-width: 1px;
+    border-color: theme('borderColor.secondary');
+  }
+
+  .data-table th:first-child,
+  .data-table td:first-child,
+  .data-table th:nth-child(2),
+  .data-table td:nth-child(2),
+  .data-table th:nth-child(3),
+  .data-table td:nth-child(3),
+  .data-table th:nth-child(4),
+  .data-table td:nth-child(4),
+  .data-table th:last-child,
+  .data-table td:last-child {
+    width: theme('width[1/6]');
+  }
+
+  .data-table tbody {
+    display: table-row-group;
+  }
+
+  .data-table {
+    display: table;
+  }
+
+  .data-table-wrap {
+    border-radius: theme('borderRadius.md');
+  }
+
+  .data-table th:first-child,
+  .data-table td:first-child {
+    padding-left: theme('padding.5');
+  }
+
+  .data-table th:last-child,
+  .data-table td:last-child {
+    padding-right: theme('padding.5');
+  }
+
+  .data-table td:not(:first-child):not(:last-child) {
+    padding-left: 0;
+  }
+}
+
+@screen md {
+  .data-table th:first-child,
+  .data-table td:first-child {
+    padding-left: theme('padding.10');
+    width: theme('width[1/6]');
+  }
+
+  .data-table th:last-child,
+  .data-table td:last-child {
+    padding-right: theme('padding.10');
+    width: theme('width[1/6]');
   }
 }

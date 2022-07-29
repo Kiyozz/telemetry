@@ -1,8 +1,8 @@
-import { PostApp } from '../../../../dto/apps/dto'
-import createApi from '../../../../helpers/api'
-import prisma from '../../../../helpers/database'
-import validation from '../../../../helpers/middleware/validation'
-import createUuid from '../../../../helpers/uuid'
+import { PostApp } from '@dto/apps/dto'
+import createApi from '@helpers/api'
+import prisma from '@helpers/database'
+import validation from '@helpers/middleware/validation'
+import createUuid from '@helpers/uuid'
 
 const api = createApi()
 

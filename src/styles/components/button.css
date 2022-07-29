@@ -1,3 +1,0 @@
-button {
-  @apply text-lg p-2 rounded bg-primary-400 hover:bg-primary-500 focus:bg-primary-600 focus:outline-none transition-colors;
-}

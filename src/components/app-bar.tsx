@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { PropsWithChildren } from 'react'
+import type { PropsWithChildren, ReactNode } from 'react'
 
 interface AppBarProps {
-  title?: string | JSX.Element
+  title?: ReactNode
 }
 
 export default function AppBar({ title, children }: PropsWithChildren<AppBarProps>) {

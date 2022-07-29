@@ -1,14 +1,14 @@
 import is from '@sindresorhus/is'
 
-import { PostEvent } from '../../../../dto/events/dto'
-import createApi, { createNotFound } from '../../../../helpers/api'
-import prisma from '../../../../helpers/database'
-import validation from '../../../../helpers/middleware/validation'
+import { PostEventV1 } from '@dto/events/dto'
+import createApi, { createNotFound } from '@helpers/api'
+import prisma from '@helpers/database'
+import validation from '@helpers/middleware/validation'
 
 const api = createApi()
 
-api.post(validation(PostEvent), async (req, res) => {
-  const dto = req.body as PostEvent
+api.post(validation(PostEventV1), async (req, res) => {
+  const dto = req.body as PostEventV1
   const app = await prisma.app.findUnique({ where: { key: dto.appKey }, select: { id: true } })
 
   if (is.null_(app)) {

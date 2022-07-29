@@ -11,6 +11,6 @@ function formatErrors(error: ValidationError): Record<string, unknown> | Record<
   }
 }
 
-export function createValidation(errors: ValidationError[]) {
+export function createResponseFromErrors(errors: ValidationError[]) {
   return errors.map(error => formatErrors(error))
 }

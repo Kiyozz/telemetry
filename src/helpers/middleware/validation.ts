@@ -1,9 +1,9 @@
 import is from '@sindresorhus/is'
-import { ClassConstructor, plainToClass } from 'class-transformer'
+import { ClassConstructor, plainToInstance } from 'class-transformer'
 import { validate } from 'class-validator'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-import { createValidation } from '../validation'
+import { createResponseFromErrors } from '../validation'
 
 type NextHandler = (err?: unknown) => void
 
@@ -15,11 +15,11 @@ export default function validation<T extends object>(cls: ClassConstructor<T>) {
       return
     }
 
-    const obj = plainToClass(cls, req.body)
+    const obj = plainToInstance(cls, req.body)
     const errors = await validate(obj)
 
     if (is.nonEmptyArray(errors)) {
-      res.status(400).json(createValidation(errors))
+      res.status(400).json(createResponseFromErrors(errors))
       return
     }
 

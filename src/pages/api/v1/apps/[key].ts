@@ -1,9 +1,9 @@
 import is from '@sindresorhus/is'
 
-import { PutApp } from '../../../../dto/apps/dto'
-import createApi, { createNotFound } from '../../../../helpers/api'
-import prisma from '../../../../helpers/database'
-import validation from '../../../../helpers/middleware/validation'
+import { PutApp } from '@dto/apps/dto'
+import createApi, { createNotFound } from '@helpers/api'
+import prisma from '@helpers/database'
+import validation from '@helpers/middleware/validation'
 
 const api = createApi()
 
@@ -17,7 +17,7 @@ api.put(validation(PutApp), async (req, res) => {
     return
   }
 
-  res.status(200).json({ data: app })
+  res.status(200).send({ data: app })
 })
 
 export default api
