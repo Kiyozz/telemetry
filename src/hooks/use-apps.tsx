@@ -1,12 +1,11 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query'
 import { getDocs } from 'firebase/firestore'
 
-import { App } from '@models/app'
-
-import { useCollection } from './firestore/use-collection'
+import { collection } from '@/helpers/firebase/collection'
+import { App } from '@/models/app'
 
 export function useApps(options?: Partial<UseQueryOptions<App[]>>) {
-  const appDbRef = useCollection('apps')
+  const appDbRef = collection('apps')
 
   return useQuery({
     queryKey: ['apps'],

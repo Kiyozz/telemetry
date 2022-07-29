@@ -1,9 +1,7 @@
 import is from '@sindresorhus/is'
 
-import { PutApp } from '@dto/apps/dto'
-import createApi, { createNotFound } from '@helpers/api'
-import prisma from '@helpers/database'
-import validation from '@helpers/middleware/validation'
+import { PutApp } from '@/dto'
+import { validation, prisma, createApi, createNotFound } from '@/helpers/server'
 
 const api = createApi()
 

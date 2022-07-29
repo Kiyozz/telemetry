@@ -12,7 +12,7 @@ export default function AppBar({ title, children }: PropsWithChildren<AppBarProp
   const isHomeDisabled = router.pathname === '/'
 
   return (
-    <div className="w-full flex fixed top-0 z-10 left-0 h-16 bg-background flex items-center px-4">
+    <div className="w-full flex fixed top-0 z-10 left-0 h-16 bg-background flex items-center px-4 border-b border-b-gray-700">
       <Link href="/">
         <a className="text-lg font-medium hover:underline absolute left-4 text-primary-400" hidden={isHomeDisabled}>
           Home

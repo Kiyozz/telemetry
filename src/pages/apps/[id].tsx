@@ -1,21 +1,13 @@
 import is from '@sindresorhus/is'
-import { useQueries } from '@tanstack/react-query'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import type React from 'react'
 import { useForm } from 'react-hook-form'
 
-import formatDate from '@helpers/formatDate'
-
-import AppBar from '../../components/app-bar'
-import Button from '../../components/button'
-import DataTable from '../../components/data-table'
-import Input from '../../components/input'
-import { useAppQueryOptions } from '../../hooks/use-app'
-import { useEventsQueryOptions } from '../../hooks/use-events'
-import { useEventsSummariesQueryOptions } from '../../hooks/use-events-summaries'
-import { useList } from '../../hooks/use-list'
+import { AppBar, Button, DataTable, Input } from '@/components'
+import { formatDate } from '@/helpers'
+import { useApp, useEventsQueryOptions, useEventsSummariesQueryOptions, useList } from '@/hooks'
 
 export default function AppPage() {
   const router = useRouter()
@@ -29,9 +21,7 @@ export default function AppPage() {
     handleSubmit: handleDetailsSubmit,
     reset: resetDetailsForm,
   } = useForm({ defaultValues: { type: '' } })
-  const [{ data: app, isLoading: isLoadingApp, isSuccess: isSuccessApp }] = useQueries({
-    queries: [useAppQueryOptions(appId), useEventsSummariesQueryOptions(appId, false)],
-  })
+  const { data: app, isLoading: isLoadingApp, isSuccess: isSuccessApp } = useApp(appId)
   const updatedAt = app?.updateTime
   const {
     handleSubmit: handleSubmitEventsList,
@@ -102,7 +92,7 @@ export default function AppPage() {
     handleSubmitEventsList(data.type)
   })
   const appName = isLoadingApp ? 'Loading...' : app?.name ?? 'Error'
-  const title = `Telemetry - ${appName}`
+  const title = `Telemetry - app ${appName}`
 
   return (
     <>
@@ -128,12 +118,20 @@ export default function AppPage() {
       </AppBar>
 
       {(isSuccessApp || isSuccessEventsSummariesList || isSuccessEventsSummariesWithoutPropertiesList) && (
-        <div className="px-4 pb-4 mt-16">
-          <div className="flex toolbar">
-            <Button onClick={onClickSummaryToggle} active={isSummaryActive}>
+        <div className="px-4 pb-4 mt-20">
+          <div className="flex">
+            <Button
+              className="rounded-br-none rounded-tr-none border border-primary-400 border-r-0"
+              onClick={onClickSummaryToggle}
+              active={isSummaryActive}
+            >
               Summary
             </Button>
-            <Button onClick={onClickDetailsToggle} active={isEventsListActive}>
+            <Button
+              className="rounded-bl-none rounded-tl-none border border-primary-400"
+              onClick={onClickDetailsToggle}
+              active={isEventsListActive}
+            >
               Details
             </Button>
           </div>
@@ -144,10 +142,12 @@ export default function AppPage() {
 
               {(isSuccessEventsSummariesList || isSuccessEventsSummariesWithoutPropertiesList) && (
                 <>
-                  <form className="inline-form" onSubmit={onSubmitSummary}>
-                    <Input defaultValue="" {...register('type')} />
+                  <form className="flex" onSubmit={onSubmitSummary}>
+                    <Input className="rounded-tr-none rounded-br-none" defaultValue="" {...register('type')} />
 
-                    <Button active>Submit</Button>
+                    <Button active className="rounded-bl-none rounded-tl-none">
+                      Submit
+                    </Button>
                   </form>
 
                   {isSuccessEventsSummariesWithoutPropertiesList &&
@@ -167,7 +167,6 @@ export default function AppPage() {
 
               {isSummaryPropertiesActive && isSuccessEventsSummariesList && is.nonEmptyArray(initialEventsSummaries) ? (
                 <DataTable
-                  compact
                   className="mt-4"
                   headers={['Type', 'Count', 'Properties']}
                   lines={eventsSummaries.map(({ type, count, properties }) => [
@@ -195,10 +194,10 @@ export default function AppPage() {
               <h2>Events</h2>
 
               {is.nonEmptyArray(initialEvents) && (
-                <form className="inline-form" onSubmit={onSubmitEventsList}>
-                  <Input defaultValue="" {...detailsRegister('type')} />
+                <form onSubmit={onSubmitEventsList} className="flex">
+                  <Input className="rounded-tr-none rounded-br-none" defaultValue="" {...detailsRegister('type')} />
 
-                  <Button type="submit" active>
+                  <Button type="submit" active className="rounded-bl-none rounded-tl-none">
                     Submit
                   </Button>
                 </form>

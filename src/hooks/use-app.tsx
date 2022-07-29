@@ -1,15 +1,14 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query'
 import { doc, getDoc } from 'firebase/firestore'
 
-import { App } from '@models/app'
-
-import { useCollection } from './firestore/use-collection'
+import { collection } from '@/helpers/firebase/collection'
+import { App } from '@/models/app'
 
 export function useAppQueryOptions<T>(
   appId: string | undefined,
   options?: Partial<UseQueryOptions<App & T>>,
 ): UseQueryOptions<App & T> {
-  const dbRef = useCollection('apps')
+  const dbRef = collection('apps')
 
   return {
     queryKey: ['apps', appId],
@@ -34,6 +33,6 @@ export function useAppQueryOptions<T>(
   }
 }
 
-export function useApp<T>(appId: string | undefined, options?: Partial<UseQueryOptions<App & T>>) {
+export function useApp<T>(appId?: string, options?: Partial<UseQueryOptions<App & T>>) {
   return useQuery(useAppQueryOptions<T>(appId, options))
 }

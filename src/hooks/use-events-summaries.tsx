@@ -1,24 +1,21 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query'
-import { collection, getDocs } from 'firebase/firestore'
+import { getDocs } from 'firebase/firestore'
 
-import { Summary } from '@models/summary'
-
-import { useFirestore } from './firestore/use-firestore'
+import { collection } from '@/helpers'
+import { Summary } from '@/models/summary'
 
 export function useEventsSummariesQueryOptions<
   T extends boolean,
-  R = T extends true ? Summary : Omit<Summary, 'properties'>,
+  R extends Omit<Summary, 'properties'> = T extends true ? Summary : Omit<Summary, 'properties'>,
 >(appId: string | undefined, useProperties: T = true as T, options?: UseQueryOptions<R[]>) {
-  const db = useFirestore()
-
   return {
-    queryKey: ['events', appId, useProperties],
+    queryKey: ['apps', appId, 'events', { useProperties }],
     queryFn: async () => {
       if (!appId) {
         return []
       }
 
-      const dbRef = collection(db, 'apps', appId, 'events')
+      const dbRef = collection('apps', appId, 'events')
       const eventsSnapshot = await getDocs(dbRef)
 
       const summary = eventsSnapshot.docs.reduce((acc, evt) => {
@@ -42,22 +39,31 @@ export function useEventsSummariesQueryOptions<
           }
         }
 
-        ;(acc[key] as unknown as { count: number }).count++
+        acc[key].count++
 
         return acc
       }, {} as Record<string, R>)
 
-      return Object.values(summary)
+      return Object.values(summary).sort((a, b) => {
+        if (a.count < b.count) {
+          return 1
+        }
+
+        if (a.count > b.count) {
+          return -1
+        }
+
+        return 0
+      })
     },
     enabled: Boolean(appId),
     ...options,
   }
 }
 
-export function useEventsSummaries<T extends boolean, R = T extends true ? Summary : Omit<Summary, 'properties'>>(
-  appId: string | undefined,
-  useProperties: T = true as T,
-  options?: UseQueryOptions<R[]>,
-) {
+export function useEventsSummaries<
+  T extends boolean,
+  R extends Omit<Summary, 'properties'> = T extends true ? Summary : Omit<Summary, 'properties'>,
+>(appId: string | undefined, useProperties: T = true as T, options?: UseQueryOptions<R[]>) {
   return useQuery(useEventsSummariesQueryOptions(appId, useProperties, options))
 }

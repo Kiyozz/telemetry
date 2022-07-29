@@ -8,7 +8,7 @@ import { createResponseFromErrors } from '../validation'
 type NextHandler = (err?: unknown) => void
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export default function validation<T extends object>(cls: ClassConstructor<T>) {
+export function validation<T extends object>(cls: ClassConstructor<T>) {
   return async (req: NextApiRequest, res: NextApiResponse, next: NextHandler): Promise<void> => {
     if (!['post', 'put', 'delete', 'patch'].includes(req.method?.toLowerCase() ?? '')) {
       next()

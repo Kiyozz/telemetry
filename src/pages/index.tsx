@@ -3,10 +3,9 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 
-import { App } from '@models/app'
-
-import AppBar from '../components/app-bar'
-import { useApps } from '../hooks/use-apps'
+import { AppBar } from '@/components'
+import { useApps } from '@/hooks'
+import { App } from '@/models/app'
 
 export default function Home() {
   const {
@@ -31,7 +30,7 @@ export default function Home() {
       <AppBar />
       {isLoading && 'Loading...'}
       {isSuccess && (
-        <div className="p-4 grid grid-flow-col gap-4 bg-background mt-16">
+        <div className="p-4 grid grid-flow-col gap-4 bg-background mt-20">
           {!is.emptyArray(apps) ? (
             apps.map((app: App) => (
               <div key={app.id}>

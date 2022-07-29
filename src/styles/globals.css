@@ -1,15 +1,26 @@
 @import 'fonts/proxima-nova/proxima-nova.css';
-@import 'components/button.css';
-@import 'components/toolbar.css';
-@import 'components/head.css';
 @import 'components/data-table.css';
-@import 'components/input.css';
-@import 'components/form.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  @apply bg-background font-nova text-text;
+  background-color: theme('backgroundColor.background');
+  font-family: theme('fontFamily.nova'), sans-serif;
+  color: theme('colors.text');
 }
 
-.break-anywhere {
-  word-wrap: anywhere;
+@layer components {
+  h1,
+  h2 {
+    font-size: theme('fontSize.lg');
+    line-height: theme('lineHeight.7');
+  }
+}
+
+@layer utilities {
+  .break-anywhere {
+    word-wrap: anywhere;
+  }
 }

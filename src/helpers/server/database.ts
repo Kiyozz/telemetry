@@ -11,4 +11,4 @@ if (process.env.NODE_ENV === 'production') {
   prisma = (global as unknown as { prisma: PrismaClient }).prisma
 }
 
-export default prisma
+export { prisma }

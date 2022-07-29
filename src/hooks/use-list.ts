@@ -2,7 +2,7 @@ import { useQuery, UseQueryOptions } from '@tanstack/react-query'
 import { Reducer, useEffect, useReducer } from 'react'
 import { toast } from 'react-hot-toast'
 
-import { Event } from '@models/event'
+import { Event } from '@/models/event'
 
 type Action<T extends Pick<Event, 'type'>> =
   | {
@@ -88,7 +88,6 @@ export function useList<T extends Pick<Event, 'type'>>({
 
   return {
     handleSubmit: (query: string) => {
-      console.log(query, queryData)
       if (isSuccess) {
         dispatch({ type: 'filter', payload: { query, from: queryData } })
       }

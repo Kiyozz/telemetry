@@ -1,16 +1,15 @@
-import { collection, getDoc, doc, addDoc, Timestamp, writeBatch } from 'firebase/firestore'
+import { collection, getDoc, doc, addDoc, Timestamp } from 'firebase/firestore'
 
-import { PostEventV2 } from '@dto/events/dto'
-import createApi, { createNotFound } from '@helpers/api'
-import { getFirestore } from '@helpers/firebase/firestore'
-import validation from '@helpers/middleware/validation'
+import { PostEventV2 } from '@/dto'
+import { firestore } from '@/helpers'
+import { createApi, createNotFound, validation } from '@/helpers/server'
+import { contentType } from '@/helpers/server/middleware/content-type'
 
 const api = createApi()
-const db = getFirestore()
 
-api.post(validation(PostEventV2), async (req, res) => {
+api.post(contentType('application/json'), validation(PostEventV2), async (req, res) => {
   const dto = req.body as PostEventV2
-  const appsDbRef = collection(db, 'apps')
+  const appsDbRef = collection(firestore, 'apps')
   const appDoc = await getDoc(doc(appsDbRef, dto.appId))
 
   if (!appDoc.exists()) {
@@ -20,28 +19,13 @@ api.post(validation(PostEventV2), async (req, res) => {
 
   const eventsDbRef = collection(appDoc.ref, 'events')
 
-  const eventDoc = doc(eventsDbRef)
+  const now = Timestamp.now()
 
   const event = await addDoc(eventsDbRef, {
     type: dto.type,
     properties: dto.properties,
-    createTime: Timestamp.now(),
-  })
-
-  const batch = writeBatch(db)
-  const now = Timestamp.now()
-
-  batch.set(eventDoc, {
-    type: dto.type,
-    properties: dto.properties,
     createTime: now,
   })
-
-  batch.update(appDoc.ref, {
-    updateTime: now,
-  })
-
-  await batch.commit()
 
   res.status(201).send({ data: event })
 })

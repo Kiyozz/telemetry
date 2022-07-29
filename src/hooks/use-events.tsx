@@ -1,22 +1,19 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query'
-import { collection, getDocs } from 'firebase/firestore'
+import { getDocs, orderBy, query } from 'firebase/firestore'
 
-import { Event } from '@models/event'
-
-import { useFirestore } from './firestore/use-firestore'
+import { collection } from '@/helpers'
+import { Event } from '@/models/event'
 
 export function useEventsQueryOptions(appId?: string, options?: UseQueryOptions<Event[]>) {
-  const db = useFirestore()
-
   return {
-    queryKey: ['events', appId],
+    queryKey: ['apps', appId, 'events'],
     queryFn: async () => {
       if (!appId) {
         return []
       }
 
-      const dbRef = collection(db, 'apps', appId, 'events')
-      const eventsSnapshot = await getDocs(dbRef)
+      const dbRef = collection('apps', appId, 'events')
+      const eventsSnapshot = await getDocs(query(dbRef, orderBy('createTime', 'desc')))
 
       return eventsSnapshot.docs.map(doc => {
         return {

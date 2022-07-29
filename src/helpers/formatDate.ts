@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 
-export default function formatDate(
+export function formatDate(
   date: Date | string | null,
   { eol = false, space = false }: { eol?: boolean; space?: boolean } = {},
 ): string {

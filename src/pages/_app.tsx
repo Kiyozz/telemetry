@@ -1,11 +1,9 @@
-import '../styles/tailwind.css'
-import '../styles/globals.css'
-import '../styles/utilities.css'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { AppProps } from 'next/app'
 import { Router } from 'next/router'
 import { useEffect, useState } from 'react'
-import { Toaster } from 'react-hot-toast'
+import { toast, Toaster } from 'react-hot-toast'
+import '../styles/globals.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,6 +39,23 @@ function MyApp({ Component, pageProps }: AppProps) {
       Router.events.off('routeChangeError', end)
     }
   }, [])
+
+  useEffect(() => {
+    let time: NodeJS.Timeout
+
+    if (isLoading) {
+      time = setTimeout(() => {
+        toast.loading('Loading...', {
+          id: 'route_loading',
+        })
+      }, 200)
+    }
+
+    return () => {
+      toast.dismiss('route_loading')
+      clearTimeout(time)
+    }
+  }, [isLoading])
 
   return (
     <QueryClientProvider client={queryClient}>
