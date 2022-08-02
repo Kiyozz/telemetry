@@ -21,5 +21,10 @@ export function createBadRequest<T>(res: Res, payload: T) {
 }
 
 export function createOk<T>(res: Res, data: T, status = 200) {
+  if (process.env.NODE_ENV === 'production') {
+    // one week in seconds
+    res.setHeader('Cache-Control', 'public, max-age=604800')
+  }
+
   res.status(status).send({ data })
 }
