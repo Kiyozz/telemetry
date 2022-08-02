@@ -1,27 +1,34 @@
+import is from '@sindresorhus/is'
 import { useQuery, UseQueryOptions } from '@tanstack/react-query'
 import { Reducer, useEffect, useReducer } from 'react'
 import { toast } from 'react-hot-toast'
 
 import { AppEvent } from '@/models'
 
-type Action<T extends Pick<AppEvent, 'type'>> =
+type Action<T extends ListObject<object>> =
   | {
       type: 'filter'
       payload: {
         query: string
-        from: T[]
+        from: T
       }
     }
   | {
       type: 'set'
-      payload: T[]
+      payload: T
     }
 
-function filterSearch<T extends Pick<AppEvent, 'type'>>(array: T[], query: string): T[] {
-  return array.filter(({ type }) => type.toLowerCase().includes(query.toLowerCase()))
+function filterSearch<T extends ListObject>(obj: T, query: string): T {
+  return Object.keys(obj).reduce((acc, key: keyof T) => {
+    if (obj[key].type.toLowerCase().includes(query.toLowerCase())) {
+      acc[key] = obj[key]
+    }
+
+    return acc
+  }, {} as T)
 }
 
-function reducer<T extends Pick<AppEvent, 'type'>>(state: T[], action: Action<T>) {
+function reducer<T extends ListObject>(state: T, action: Action<T>) {
   switch (action.type) {
     case 'filter':
       return filterSearch(action.payload.from, action.payload.query)
@@ -39,26 +46,32 @@ type ToastOptions = {
   toastId?: string
 }
 
-type UseListOptions<T extends Pick<AppEvent, 'type'>> = {
+type ObjectType = Pick<AppEvent, 'type'>
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ListObject<T = any> = Record<keyof T, ObjectType>
+type UseQueryData<T> = T extends UseQueryOptions<infer U> ? U : never
+
+type UseObjectListOptions<Q extends UseQueryOptions, D extends UseQueryData<Q>, T extends ListObject<D>> = {
   onReset: () => void
-  query: UseQueryOptions<T[]>
+  query: UseQueryOptions<T>
 } & ToastOptions
 
-export function useList<T extends Pick<AppEvent, 'type'>>({
+export function useObjectList<Q extends UseQueryOptions, D extends UseQueryData<Q>, T extends ListObject<D>>({
   onReset,
   useToast = false,
   successMessage,
   errorMessage,
   query: options,
-}: UseListOptions<T>) {
-  const [list, dispatch] = useReducer<Reducer<T[], Action<T>>>(reducer, [])
+}: UseObjectListOptions<Q, D, T>) {
+  const [list, dispatch] = useReducer<Reducer<T, Action<T>>>(reducer, {} as T)
 
   const {
     data: queryData,
     isSuccess,
     isLoading,
     isLoadingError,
-  } = useQuery<T[]>({
+  } = useQuery<T>({
     ...options,
     onSuccess: data => {
       if (useToast && successMessage) {
@@ -92,7 +105,7 @@ export function useList<T extends Pick<AppEvent, 'type'>>({
         dispatch({ type: 'filter', payload: { query, from: queryData } })
       }
     },
-    list,
+    list: is.emptyObject(list) ? undefined : list,
     data: queryData,
     isSuccess,
     isLoading,

@@ -1,4 +1,4 @@
-import { useQuery, UseQueryOptions } from '@tanstack/react-query'
+import { useInfiniteQuery, UseInfiniteQueryOptions } from '@tanstack/react-query'
 import { Reducer, useEffect, useReducer } from 'react'
 import { toast } from 'react-hot-toast'
 
@@ -41,10 +41,10 @@ type ToastOptions = {
 
 type UseListOptions<T extends Pick<AppEvent, 'type'>> = {
   onReset: () => void
-  query: UseQueryOptions<T[]>
+  query: UseInfiniteQueryOptions<{ nextPage: number; data: T[] }>
 } & ToastOptions
 
-export function useList<T extends Pick<AppEvent, 'type'>>({
+export function useInfiniteList<T extends Pick<AppEvent, 'type'>>({
   onReset,
   useToast = false,
   successMessage,
@@ -55,10 +55,13 @@ export function useList<T extends Pick<AppEvent, 'type'>>({
 
   const {
     data: queryData,
+    isFetchingNextPage,
+    hasNextPage,
     isSuccess,
     isLoading,
     isLoadingError,
-  } = useQuery<T[]>({
+    fetchNextPage,
+  } = useInfiniteQuery<{ nextPage: number; data: T[] }>({
     ...options,
     onSuccess: data => {
       if (useToast && successMessage) {
@@ -80,7 +83,7 @@ export function useList<T extends Pick<AppEvent, 'type'>>({
 
   useEffect(() => {
     if (isSuccess && queryData) {
-      dispatch({ type: 'set', payload: queryData })
+      dispatch({ type: 'set', payload: queryData.pages.map(p => p.data).flat() })
       onReset()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -88,8 +91,8 @@ export function useList<T extends Pick<AppEvent, 'type'>>({
 
   return {
     handleSubmit: (query: string) => {
-      if (isSuccess) {
-        dispatch({ type: 'filter', payload: { query, from: queryData } })
+      if (isSuccess && queryData) {
+        dispatch({ type: 'filter', payload: { query, from: queryData.pages.map(p => p.data).flat() } })
       }
     },
     list,
@@ -97,5 +100,8 @@ export function useList<T extends Pick<AppEvent, 'type'>>({
     isSuccess,
     isLoading,
     isLoadingError,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
   }
 }

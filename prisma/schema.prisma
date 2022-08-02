@@ -8,10 +8,11 @@ datasource db {
 }
 
 model App {
-  id     Int     @id @default(autoincrement())
-  name   String
-  key    String  @unique(map: "apps.key_unique")
-  events Event[]
+  id        Int      @id @default(autoincrement())
+  name      String
+  key       String   @unique(map: "apps.key_unique")
+  updatedAt DateTime @default(now()) @map("updated_at")
+  events    Event[]
 
   @@map("apps")
 }
@@ -19,8 +20,9 @@ model App {
 model Event {
   id         Int      @id @default(autoincrement())
   type       String
+  key        String
   properties Json?
-  appId      Int
+  appId      Int      @map("app_id")
   createdAt  DateTime @default(now()) @map("created_at")
   app        App      @relation(fields: [appId], references: [id], onDelete: Cascade)
 

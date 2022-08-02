@@ -18,6 +18,11 @@ api.post(validation(PostEventV1), async (req, res) => {
     data: { appId: app.id, type: dto.type, properties: dto.propertiesString },
   })
 
+  await prisma.app.update({
+    where: { id: app.id },
+    data: { updatedAt: new Date() },
+  })
+
   res.status(201).json({ data: event })
 })
 

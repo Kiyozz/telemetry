@@ -1,4 +1,5 @@
-import { IsObject, IsString } from 'class-validator'
+import { Transform } from 'class-transformer'
+import { IsNumber, IsObject, IsString } from 'class-validator'
 
 export class PostEventV1 {
   @IsString()
@@ -24,4 +25,18 @@ export class PostEventV2 {
 
   @IsObject()
   public properties: Record<string, unknown> = {}
+}
+
+export class GetEvents {
+  @IsString()
+  public key: string
+
+  @IsNumber()
+  @Transform(({ value }) => parseInt(value), { toClassOnly: true })
+  public page: number
+}
+
+export class GetSummary {
+  @IsString()
+  public key: string
 }

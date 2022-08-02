@@ -33,8 +33,8 @@ export default function Home() {
         <div className="p-4 grid grid-flow-col gap-4 bg-background mt-20">
           {!is.emptyArray(apps) ? (
             apps.map((app: App) => (
-              <div key={app.id}>
-                <Link href={`/apps/${app.id}`}>
+              <div key={app.key}>
+                <Link href={`/apps/${app.key}`}>
                   <a className="bg-primary-400 hover:bg-primary-500 text-lg transition-colors rounded py-2 px-3 flex justify-center items-center">
                     {app.name}
                   </a>

@@ -3,7 +3,7 @@ import cx from 'classnames'
 interface DataTableProps {
   className?: string
   headers: string[]
-  lines?: (string | number)[][]
+  lines?: { key: string; values: { key: string; value: string | number }[] }[]
   compact?: boolean
 }
 
@@ -13,17 +13,17 @@ export default function DataTable({ className, headers, lines = [], compact = fa
       <table className={cx('data-table', compact && 'compact')}>
         <thead>
           <tr>
-            {headers.map((header, index) => (
-              <th key={index}>{header}</th>
+            {headers.map(header => (
+              <th key={header}>{header}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {lines.map((line, index) => (
-            <tr key={index}>
-              {line.map((l, i) => (
-                <td key={i} data-title={headers[i]}>
-                  {l}
+          {lines.map(line => (
+            <tr key={line.key}>
+              {line.values.map((l, i) => (
+                <td key={l.key} data-title={headers[i]}>
+                  {l.value}
                 </td>
               ))}
             </tr>

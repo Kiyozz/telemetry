@@ -1,34 +1,24 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query'
-import { doc, getDoc } from 'firebase/firestore'
+import ky from 'ky'
 
-import { collection } from '@/helpers/firebase/collection'
-import { App } from '@/models/app'
+import { App } from '@/models'
 
 export function useAppQueryOptions<T>(
-  appId: string | undefined,
+  appKey: string | undefined,
   options?: Partial<UseQueryOptions<App & T>>,
 ): UseQueryOptions<App & T> {
-  const dbRef = collection('apps')
-
   return {
-    queryKey: ['apps', appId],
+    queryKey: ['apps', appKey],
     queryFn: async () => {
-      if (!appId) {
+      if (!appKey) {
         throw new TypeError('no appId')
       }
 
-      const appSnapshot = await getDoc(doc(dbRef, appId))
+      const { data: app } = await ky.get(`/api/v1/apps/${appKey}`).json<{ data: App & T }>()
 
-      if (!appSnapshot.exists()) {
-        throw new TypeError('app does not exist')
-      }
-
-      return {
-        id: appSnapshot.id,
-        ...appSnapshot.data(),
-      } as App & T
+      return app
     },
-    enabled: Boolean(appId),
+    enabled: Boolean(appKey),
     ...options,
   }
 }

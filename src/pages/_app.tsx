@@ -59,12 +59,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {isLoading && (
-        <div className="fixed text-2xl bottom-0 flex justify-center items-center left-1/2 transform -translate-x-1/2 h-16 p-4 text-text">
-          Loading
-        </div>
-      )}
-      <Toaster />
+      <Toaster toastOptions={{ style: { minWidth: '200px' } }} />
       <Component {...pageProps} />
     </QueryClientProvider>
   )
