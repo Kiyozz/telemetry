@@ -10,6 +10,10 @@
     "prisma:migration:generate": "prisma migrate dev",
     "prepare": "husky install"
   },
+  "engines": {
+    "node": "16",
+    "pnpm": "7"
+  },
   "dependencies": {
     "@prisma/client": "^4.1.0",
     "@sindresorhus/is": "^5.3.0",
