@@ -20,7 +20,6 @@ model App {
 model Event {
   id         Int      @id @default(autoincrement())
   type       String
-  key        String
   properties Json?
   appId      Int      @map("app_id")
   createdAt  DateTime @default(now()) @map("created_at")
