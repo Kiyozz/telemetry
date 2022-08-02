@@ -61,6 +61,7 @@ export function useInfiniteList<T extends Pick<AppEvent, 'type'>>({
     isLoading,
     isLoadingError,
     fetchNextPage,
+    isFetching,
   } = useInfiniteQuery<{ nextPage: number; data: T[] }>({
     ...options,
     onSuccess: data => {
@@ -100,6 +101,7 @@ export function useInfiniteList<T extends Pick<AppEvent, 'type'>>({
     isSuccess,
     isLoading,
     isLoadingError,
+    isFetching,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,

@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast'
 
 import { AppEvent } from '@/models'
 
-type Action<T extends ListObject<object>> =
+type Action<T extends ListObject> =
   | {
       type: 'filter'
       payload: {
@@ -20,9 +20,7 @@ type Action<T extends ListObject<object>> =
 
 function filterSearch<T extends ListObject>(obj: T, query: string): T {
   return Object.keys(obj).reduce((acc, key: keyof T) => {
-    if (obj[key].type.toLowerCase().includes(query.toLowerCase())) {
-      acc[key] = obj[key]
-    }
+    acc[key] = obj[key].filter(item => item.type.toLowerCase().includes(query.toLowerCase())) as T[keyof T]
 
     return acc
   }, {} as T)
@@ -49,7 +47,7 @@ type ToastOptions = {
 type ObjectType = Pick<AppEvent, 'type'>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ListObject<T = any> = Record<keyof T, ObjectType>
+type ListObject<T = any> = Record<keyof T, ObjectType[]>
 type UseQueryData<T> = T extends UseQueryOptions<infer U> ? U : never
 
 type UseObjectListOptions<Q extends UseQueryOptions, D extends UseQueryData<Q>, T extends ListObject<D>> = {

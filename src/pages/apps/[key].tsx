@@ -38,6 +38,7 @@ export default function AppPage() {
     hasNextPage: hasNextPageEventsList,
     fetchNextPage: fetchNextEvents,
     isFetchingNextPage: isFetchingNextEvents,
+    isFetching: isFetchingEventsList,
   } = useInfiniteList({
     onReset: () => {
       resetDetailsForm()
@@ -203,43 +204,53 @@ export default function AppPage() {
             </div>
           )}
 
-          {isEventsListActive && isSuccessEventsList && (
+          {isEventsListActive && (
             <div className="mt-4 flex flex-col">
               <h2>Events</h2>
 
-              {!is.undefined(initialEvents) && is.nonEmptyArray(initialEvents.pages) && (
-                <form onSubmit={onSubmitEventsList} className="flex">
-                  <Input className="rounded-tr-none rounded-br-none" defaultValue="" {...detailsRegister('type')} />
+              {isSuccessEventsList && (
+                <>
+                  {!is.undefined(initialEvents) && is.nonEmptyArray(initialEvents.pages) && (
+                    <form onSubmit={onSubmitEventsList} className="flex">
+                      <Input className="rounded-tr-none rounded-br-none" defaultValue="" {...detailsRegister('type')} />
 
-                  <Button type="submit" active className="rounded-bl-none rounded-tl-none">
-                    Submit
-                  </Button>
-                </form>
+                      <Button type="submit" active className="rounded-bl-none rounded-tl-none">
+                        Submit
+                      </Button>
+                    </form>
+                  )}
+
+                  {is.nonEmptyArray(events) ? (
+                    <DataTable
+                      className="mt-4"
+                      headers={['Id', 'Type', 'Time', 'Properties']}
+                      lines={events.map(({ type, id, properties, createdAt }) => ({
+                        key: id,
+                        values: [
+                          { key: `${id}-id`, value: id },
+                          { key: `${id}-type`, value: type },
+                          { key: `${id}-time`, value: formatDate(createdAt, { space: true }) },
+                          { key: `${id}-properties`, value: formatJson(properties) },
+                        ],
+                      }))}
+                      compact
+                    />
+                  ) : (
+                    <p className="text-paragraph">No events yet</p>
+                  )}
+                  {hasNextPageEventsList && is.emptyString(getDetailsValues('type')) && (
+                    <Button
+                      onClick={() => fetchNextEvents()}
+                      className="self-center mt-4"
+                      disabled={isFetchingNextEvents}
+                    >
+                      Load more
+                    </Button>
+                  )}
+                </>
               )}
 
-              {is.nonEmptyArray(events) ? (
-                <DataTable
-                  className="mt-4"
-                  headers={['Id', 'Type', 'Time', 'Properties']}
-                  lines={events.map(({ type, id, properties, createdAt }) => ({
-                    key: id,
-                    values: [
-                      { key: `${id}-id`, value: id },
-                      { key: `${id}-type`, value: type },
-                      { key: `${id}-time`, value: formatDate(createdAt, { space: true }) },
-                      { key: `${id}-properties`, value: formatJson(properties) },
-                    ],
-                  }))}
-                  compact
-                />
-              ) : (
-                <p className="text-paragraph">No events yet</p>
-              )}
-              {hasNextPageEventsList && is.emptyString(getDetailsValues('type')) && (
-                <Button onClick={() => fetchNextEvents()} className="self-center mt-4" disabled={isFetchingNextEvents}>
-                  Load more
-                </Button>
-              )}
+              {isFetchingEventsList && <div className="self-center text-xl">Loading...</div>}
             </div>
           )}
 
