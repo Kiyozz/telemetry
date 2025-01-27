@@ -24,8 +24,8 @@ importers:
         specifier: ^1.11.4
         version: 1.11.13
       ky:
-        specifier: ^0.31.1
-        version: 0.31.4
+        specifier: ^1.7.4
+        version: 1.7.4
       next:
         specifier: 12.2.3
         version: 12.2.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -1269,9 +1269,9 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  ky@0.31.4:
-    resolution: {integrity: sha512-OFuAD3riwhAfHK3J4FrhlujFRpm0ELBEfDHZfFpw89OTozQt3NLF39lNblUO5udj5vSkyaBKnLai/rFCzBfISQ==}
-    engines: {node: '>=14.16'}
+  ky@1.7.4:
+    resolution: {integrity: sha512-zYEr/gh7uLW2l4su11bmQ2M9xLgQLjyvx58UyNM/6nuqyWFHPX5ktMjvpev3F8QWdjSsHUpnWew4PBCswBNuMQ==}
+    engines: {node: '>=18'}
 
   language-subtag-registry@0.3.23:
     resolution: {integrity: sha512-0K65Lea881pHotoGEa5gDlMxt3pctLi2RplBb7Ezh4rRdLEOtgi7n4EwK9lamnUCkKBqaeKRVebTq6BAxSkpXQ==}
@@ -3334,7 +3334,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  ky@0.31.4: {}
+  ky@1.7.4: {}
 
   language-subtag-registry@0.3.23: {}
 

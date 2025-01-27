@@ -20,7 +20,7 @@
     "@tanstack/react-query": "^4.0.10",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.4",
-    "ky": "^0.31.1",
+    "ky": "^1.7.4",
     "next": "12.2.3",
     "next-connect": "^0.13.0",
     "prisma": "^4.1.1",
