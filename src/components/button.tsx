@@ -1,4 +1,4 @@
-import cx from 'classnames'
+import cx from 'clsx'
 import { ButtonHTMLAttributes, DetailedHTMLProps, forwardRef } from 'react'
 
 interface ButtonProps

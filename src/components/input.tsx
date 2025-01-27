@@ -1,4 +1,4 @@
-import cx from 'classnames'
+import cx from 'clsx'
 import { DetailedHTMLProps, forwardRef, InputHTMLAttributes } from 'react'
 
 type InputProps = Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, 'ref'>
