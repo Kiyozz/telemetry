@@ -35,3 +35,6 @@ yarn-error.log*
 .vercel
 
 /var
+/src/generated
+next-env.d.ts
+tsconfig.tsbuildinfo

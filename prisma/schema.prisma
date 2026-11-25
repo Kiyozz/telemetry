@@ -1,10 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model App {
@@ -25,5 +26,7 @@ model Event {
   createdAt  DateTime @default(now()) @map("created_at")
   app        App      @relation(fields: [appId], references: [id], onDelete: Cascade)
 
+  @@index([appId, createdAt(sort: Desc)], map: "events_app_id_created_at_idx")
+  @@index([appId, type], map: "events_app_id_type_idx")
   @@map("events")
 }
