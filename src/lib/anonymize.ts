@@ -14,6 +14,8 @@ const replacements: [RegExp, string][] = [
   [/\/(?:home|Users)\/[^/\s)'"]+/g, '~'],
   // e-mail addresses
   [/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, '<email>'],
+  // random identifiers, like RPC request ids, which also split identical errors apart
+  [/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, '<id>'],
 ]
 
 export function anonymizeText(text: string): string {

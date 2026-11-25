@@ -279,7 +279,8 @@ export async function getTypeBreakdown(appId: number, type: string, range: Range
       WHERE e.app_id = ${appId} AND e.type = ${type} ${since}
     ),
     kv AS (
-      SELECT p.key AS property, p.value AS value
+      SELECT p.key AS property,
+        regexp_replace(p.value, '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', '<id>', 'gi') AS value
       FROM normalized n,
         jsonb_each_text(CASE WHEN jsonb_typeof(n.properties) = 'object' THEN n.properties ELSE '{}'::jsonb END) AS p
     ),
