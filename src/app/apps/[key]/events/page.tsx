@@ -50,7 +50,8 @@ async function EventsExplorer({ params, searchParams }: PageProps<'/apps/[key]/e
       </p>
 
       <search className="mt-4 block max-w-md">
-        <form action={`/apps/${app.key}/events`} className="flex items-end gap-2">
+        {/* keyed on the filter: defaultValue only applies on mount, and client navigations keep the form */}
+        <form key={type ?? ''} action={`/apps/${app.key}/events`} className="flex items-end gap-2">
           <Field name="type" className="flex-1">
             <FieldLabel>Event type</FieldLabel>
             <Input defaultValue={type} placeholder="e.g. Exception" />
