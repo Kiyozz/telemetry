@@ -10,17 +10,25 @@ import {
   PaginationPrevious,
 } from '@ui-sdk/react/pagination'
 import type { Route } from 'next'
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
 import type { ComponentProps } from 'react'
 
 function RouterLink({ href, children, ...props }: ComponentProps<'a'>) {
   return href ? (
     <Link {...props} href={href as Route}>
       {children}
+      <Pending />
     </Link>
   ) : (
     <a {...props}>{children}</a>
   )
+}
+
+/** Hidden marker: drives the page-wide [data-pending] feedback without moving the pagination. */
+function Pending() {
+  const { pending } = useLinkStatus()
+
+  return pending ? <span hidden data-pending /> : null
 }
 
 interface EventsPaginationProps {

@@ -29,6 +29,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               PCA Telemetry
             </Link>
           </div>
+          <div
+            aria-hidden
+            className="pending-bar pointer-events-none absolute inset-x-0 -bottom-px h-0.5 overflow-hidden opacity-0 transition-opacity after:block after:h-full after:w-2/5 after:rounded-full after:bg-accent"
+          />
         </header>
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
         <footer className="mx-auto max-w-6xl px-4 pb-10 text-sm text-ink-muted">

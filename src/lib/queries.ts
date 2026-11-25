@@ -346,3 +346,112 @@ export async function getEvents(
     })),
   }
 }
+
+export interface ExceptionGroup {
+  /** The error message, with identifiers replaced by `<id>`. */
+  error: string
+  count: number
+  firstSeen: string
+  lastSeen: string
+  /** Stack trace of the most recent occurrence, anonymized. */
+  stack: string | null
+  /** Occurrences per bucket, oldest first, aligned with `ExceptionsReport.buckets`. */
+  trend: number[]
+}
+
+export interface ExceptionsReport {
+  bucket: 'day' | 'week'
+  buckets: string[]
+  total: number
+  /** Distinct messages: only the first EXCEPTION_GROUPS are in `groups`. */
+  distinct: number
+  groups: ExceptionGroup[]
+}
+
+const UUID_PATTERN = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+const EXCEPTION_GROUPS = 100
+
+/** Exceptions grouped by message, most frequent first. */
+export async function getExceptions(appId: number, range: RangeKey): Promise<ExceptionsReport> {
+  'use cache'
+  cacheLife('minutes')
+  cacheTag(`app-id:${appId}`)
+
+  const { days } = ranges[range]
+  const bucket = bucketOf(range)
+  const unit = raw(`'${bucket}'`)
+  const since = days === null ? empty : sql`AND e.created_at >= now() - make_interval(days => ${days})`
+
+  const groups = await prisma.$queryRaw<
+    {
+      error: string
+      count: bigint
+      first_seen: Date
+      last_seen: Date
+      stack: string | null
+      total: Prisma.Decimal | bigint
+      distinct_errors: bigint
+      trend: [string, number][]
+    }[]
+  >`
+    WITH ex AS (
+      SELECT
+        regexp_replace(COALESCE(NULLIF(${props} ->> 'error', ''), '(no message)'), ${UUID_PATTERN}, '<id>', 'gi') AS error,
+        ${props} ->> 'stack' AS stack,
+        e.created_at
+      FROM events e
+      WHERE e.app_id = ${appId} AND e.type = ${EVENT_TYPES.exception} ${since}
+    ),
+    grouped AS (
+      SELECT error, COUNT(*) AS count, MIN(created_at) AS first_seen, MAX(created_at) AS last_seen,
+        (ARRAY_AGG(stack ORDER BY created_at DESC))[1] AS stack,
+        SUM(COUNT(*)) OVER () AS total, COUNT(*) OVER () AS distinct_errors
+      FROM ex
+      GROUP BY error
+      ORDER BY count DESC, error
+      LIMIT ${EXCEPTION_GROUPS}
+    ),
+    trend AS (
+      SELECT error, date_trunc(${unit}, created_at) AS at, COUNT(*)::int AS count
+      FROM ex
+      WHERE error IN (SELECT error FROM grouped)
+      GROUP BY 1, 2
+    )
+    SELECT g.*,
+      COALESCE((SELECT jsonb_agg(jsonb_build_array(t.at, t.count)) FROM trend t WHERE t.error = g.error), '[]') AS trend
+    FROM grouped g
+    ORDER BY g.count DESC, g.error`
+
+  const start =
+    days === null
+      ? sql`(SELECT date_trunc(${unit}, MIN(e.created_at)) FROM events e WHERE e.app_id = ${appId})`
+      : sql`date_trunc(${unit}, now() - make_interval(days => ${days - 1}))`
+  const buckets = await prisma.$queryRaw<{ at: Date }[]>`
+    SELECT s.at FROM generate_series(${start}, date_trunc(${unit}, now()), ('1 ' || ${bucket})::interval) AS s(at)`
+  const keys = buckets.map(row => row.at.toISOString())
+  const index = new Map(keys.map((key, i) => [key, i]))
+
+  return {
+    bucket,
+    buckets: keys,
+    total: Number(groups[0]?.total ?? 0),
+    distinct: Number(groups[0]?.distinct_errors ?? 0),
+    groups: groups.map(group => {
+      const trend = keys.map(() => 0)
+
+      for (const [at, count] of group.trend) {
+        const i = index.get(new Date(at).toISOString())
+        if (i !== undefined) trend[i] = count
+      }
+
+      return {
+        error: anonymize(group.error),
+        count: Number(group.count),
+        firstSeen: group.first_seen.toISOString(),
+        lastSeen: group.last_seen.toISOString(),
+        stack: group.stack ? anonymize(group.stack.replace(new RegExp(UUID_PATTERN, 'gi'), '<id>')) : null,
+        trend,
+      }
+    }),
+  }
+}

@@ -1,10 +1,11 @@
 interface SparklineProps {
   values: number[]
   label: string
+  className?: string
 }
 
 /** Rendered on the server: no JavaScript is shipped for it. */
-export function Sparkline({ values, label }: SparklineProps) {
+export function Sparkline({ values, label, className = 'h-12' }: SparklineProps) {
   const width = 240
   const height = 48
   const max = Math.max(1, ...values)
@@ -17,7 +18,7 @@ export function Sparkline({ values, label }: SparklineProps) {
     <svg
       viewBox={`0 0 ${width} ${height}`}
       preserveAspectRatio="none"
-      className="h-12 w-full"
+      className={`w-full ${className}`}
       role="img"
       aria-label={label}
     >

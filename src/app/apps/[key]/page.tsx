@@ -9,9 +9,11 @@ import { KpiTile } from '@/components/kpi-tile'
 import { RangeControl } from '@/components/range-control'
 import { ShareBars } from '@/components/share-bars'
 import { Legend, TimeSeriesChart, type Series } from '@/components/time-series-chart'
+import { PendingHint } from '@/components/pending-hint'
+import { ScrollIntoView } from '@/components/scroll-into-view'
 import { TypeBreakdown } from '@/components/type-breakdown'
 import { formatLongDay, formatNumber, formatRelative } from '@/lib/format'
-import { getApp, getDashboard, getTypeBreakdown, type Dashboard } from '@/lib/queries'
+import { EVENT_TYPES, getApp, getDashboard, getTypeBreakdown, type Dashboard } from '@/lib/queries'
 import { parseRange, ranges } from '@/lib/range'
 
 export async function generateMetadata({ params }: PageProps<'/apps/[key]'>): Promise<Metadata> {
@@ -65,10 +67,16 @@ async function AppDashboard({ params, searchParams }: PageProps<'/apps/[key]'>) 
         <div className="flex flex-wrap items-center gap-3">
           <RangeControl current={range} />
           <Link
-            href={`${basePath}/events`}
-            className="rounded-lg border border-hairline bg-surface px-3 py-2 text-sm transition-colors hover:border-accent"
+            href={`${basePath}/exceptions?range=${range}`}
+            className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-surface px-3 py-2 text-sm transition-colors hover:border-accent"
           >
-            Browse events →
+            Exceptions → <PendingHint />
+          </Link>
+          <Link
+            href={`${basePath}/events`}
+            className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-surface px-3 py-2 text-sm transition-colors hover:border-accent"
+          >
+            Browse events → <PendingHint />
           </Link>
         </div>
       </div>
@@ -77,7 +85,12 @@ async function AppDashboard({ params, searchParams }: PageProps<'/apps/[key]'>) 
         <KpiTile label="Events" kpi={kpis.events} />
         <KpiTile label="Launches" kpi={kpis.launches} hint="App.Loaded events" />
         <KpiTile label="First launches" kpi={kpis.installs} hint="App.FirstLoaded events: new installs" />
-        <KpiTile label="Exceptions" kpi={kpis.exceptions} upIsGood={false} />
+        <KpiTile
+          label="Exceptions"
+          kpi={kpis.exceptions}
+          upIsGood={false}
+          href={{ pathname: `${basePath}/exceptions`, query: { range } }}
+        />
       </div>
 
       <Card
@@ -126,6 +139,7 @@ async function AppDashboard({ params, searchParams }: PageProps<'/apps/[key]'>) 
 
       {selectedType && breakdown && (
         <div id="properties" className="scroll-mt-20">
+          <ScrollIntoView key={selectedType} />
           <Card
             className="mt-4"
             title={
@@ -138,19 +152,29 @@ async function AppDashboard({ params, searchParams }: PageProps<'/apps/[key]'>) 
               <Link
                 href={{ pathname: basePath, query: { range } }}
                 scroll={false}
-                className="text-sm text-ink-muted hover:text-ink"
+                className="inline-flex items-center gap-2 text-sm text-ink-muted hover:text-ink"
               >
-                Close
+                Close <PendingHint />
               </Link>
             }
           >
             <TypeBreakdown breakdown={breakdown} />
-            <Link
-              href={{ pathname: `${basePath}/events`, query: { type: selectedType } }}
-              className="mt-4 inline-block text-sm text-accent hover:underline"
-            >
-              See these events →
-            </Link>
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+              {selectedType === EVENT_TYPES.exception && (
+                <Link
+                  href={`${basePath}/exceptions?range=${range}`}
+                  className="inline-flex items-center gap-2 text-accent hover:underline"
+                >
+                  Browse exceptions by message → <PendingHint />
+                </Link>
+              )}
+              <Link
+                href={{ pathname: `${basePath}/events`, query: { type: selectedType } }}
+                className="inline-flex items-center gap-2 text-accent hover:underline"
+              >
+                See these events → <PendingHint />
+              </Link>
+            </div>
           </Card>
         </div>
       )}

@@ -1,6 +1,9 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@ui-sdk/react/tooltip'
 import { clsx } from 'clsx'
+import Link from 'next/link'
+import type { ComponentProps } from 'react'
 
+import { PendingHint } from '@/components/pending-hint'
 import { delta, formatNumber } from '@/lib/format'
 import type { Kpi } from '@/lib/queries'
 
@@ -10,16 +13,25 @@ interface KpiTileProps {
   /** For exceptions, going up is bad news. */
   upIsGood?: boolean
   hint?: string
+  /** Page with the details behind the number. */
+  href?: ComponentProps<typeof Link>['href']
 }
 
-export function KpiTile({ label, kpi, upIsGood = true, hint }: KpiTileProps) {
+export function KpiTile({ label, kpi, upIsGood = true, hint, href }: KpiTileProps) {
   const change = delta(kpi.current, kpi.previous)
   const good = change && change.direction !== 'flat' && (change.direction === 'up') === upIsGood
 
   return (
-    <div className="rounded-xl border border-hairline bg-surface p-4">
+    <div className="relative rounded-xl border border-hairline bg-surface p-4 has-[a:hover]:border-accent">
       <div className="flex items-center gap-1.5 text-sm text-ink-muted">
-        {label}
+        {href ? (
+          <Link href={href} className="inline-flex items-center gap-1.5 after:absolute after:inset-0 hover:text-ink">
+            {label} <span aria-hidden>→</span>
+            <PendingHint />
+          </Link>
+        ) : (
+          label
+        )}
         {hint && (
           <Tooltip>
             <TooltipTrigger

@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import Link from 'next/link'
 import type { ComponentProps } from 'react'
 
+import { PendingHint } from '@/components/pending-hint'
 import { formatNumber } from '@/lib/format'
 import type { Share } from '@/lib/queries'
 
@@ -31,7 +32,10 @@ export function ShareBars({ shares, empty = 'No data for this period.', hrefOf, 
         const content = (
           <>
             <span className="relative z-10 flex items-baseline justify-between gap-3 text-sm">
-              <span className="truncate">{share.label}</span>
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="truncate">{share.label}</span>
+                {href && <PendingHint />}
+              </span>
               <span className="shrink-0 tabular-nums text-ink-muted">
                 {formatNumber(share.count)} <span className="inline-block w-9 text-right">{percent}%</span>
               </span>

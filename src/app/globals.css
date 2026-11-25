@@ -123,3 +123,43 @@
     outline-offset: 2px;
   }
 }
+
+/*
+ * Navigation feedback: a control that starts a navigation renders an element with
+ * [data-pending] (RangeControl, PendingHint). While one is present the page dims and a
+ * bar runs under the header, so slow queries never look like a dead click.
+ */
+@keyframes pending-bar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@layer base {
+  main {
+    transition: opacity 150ms ease;
+  }
+
+  body:has([data-pending]) main {
+    opacity: 0.6;
+    transition-delay: 120ms;
+  }
+
+  body:has([data-pending]) .pending-bar {
+    opacity: 1;
+  }
+
+  body:has([data-pending]) .pending-bar::after {
+    animation: pending-bar 1s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body:has([data-pending]) .pending-bar::after {
+      animation: none;
+      width: 100%;
+    }
+  }
+}
