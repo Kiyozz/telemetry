@@ -2,12 +2,28 @@ import { PrismaPg } from '@prisma/adapter-pg'
 
 import { PrismaClient } from '@/generated/prisma/client'
 import { databaseUrl } from '@/lib/database-url'
+import { serverSupportsSsl } from '@/lib/ssl-probe'
 
-/**
- * node-postgres reads `sslmode` itself, but only knows the libpq values: the old
- * `preferred` spelling turned SSL on with certificate checks. `prefer` and `allow`
- * keep SSL without checks, `disable` turns it off.
- */
+const PREFER = ['prefer', 'preferred', 'allow']
+
+/** Resolves `prefer` the way libpq does: SSL when the server offers it, plain TCP otherwise. */
+async function preferredSsl(): Promise<boolean | null> {
+  try {
+    const url = new URL(databaseUrl())
+
+    if (!PREFER.includes(url.searchParams.get('sslmode') ?? '')) {
+      return null
+    }
+
+    return await serverSupportsSsl(url.hostname, Number(url.port || 5432))
+  } catch {
+    return null
+  }
+}
+
+const sslOffered = await preferredSsl()
+
+// node-postgres only knows the libpq values, and would turn the old `preferred` spelling into a verified SSL connection
 function createAdapter() {
   const url = new URL(databaseUrl())
   const sslmode = url.searchParams.get('sslmode')
@@ -29,7 +45,7 @@ function createAdapter() {
 
   if (sslmode === 'require' || sslmode === 'verify-ca' || sslmode === 'verify-full') {
     ssl = { rejectUnauthorized: sslmode !== 'require' }
-  } else if (sslmode === 'prefer' || sslmode === 'preferred' || sslmode === 'allow') {
+  } else if (PREFER.includes(sslmode ?? '') && sslOffered) {
     ssl = { rejectUnauthorized: false }
   }
 
