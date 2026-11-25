@@ -1,0 +1,165 @@
+@layer ui-sdk;
+@import 'tailwindcss';
+@import '@ui-sdk/core/web.css' layer(components);
+
+:root {
+  color-scheme: light;
+  --page: #f6f6f8;
+  --surface: #ffffff;
+  --surface-muted: #f0f0f3;
+  --ink: #191919;
+  --ink-muted: #666666;
+  --hairline: rgba(11, 11, 11, 0.1);
+  --grid: #e7e7e7;
+  --axis: #c2c2c2;
+  --accent: #6a4ce2;
+  --accent-soft: rgba(106, 76, 226, 0.12);
+  --series-1: #257de0;
+  --series-2: #f47230;
+  --good: #006c10;
+  --critical: #dc3c3d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --page: #0b0b0d;
+    --surface: #17171a;
+    --surface-muted: #202024;
+    --ink: #efefef;
+    --ink-muted: #9c9c9c;
+    --hairline: rgba(255, 255, 255, 0.1);
+    --grid: #2c2c30;
+    --axis: #474747;
+    --accent: #9887ef;
+    --accent-soft: rgba(152, 135, 239, 0.16);
+    --series-1: #338ced;
+    --series-2: #e76624;
+    --good: #53c556;
+    --critical: #eb6263;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #0b0b0d;
+  --surface: #17171a;
+  --surface-muted: #202024;
+  --ink: #efefef;
+  --ink-muted: #9c9c9c;
+  --hairline: rgba(255, 255, 255, 0.1);
+  --grid: #2c2c30;
+  --axis: #474747;
+  --accent: #9887ef;
+  --accent-soft: rgba(152, 135, 239, 0.16);
+  --series-1: #338ced;
+  --series-2: #e76624;
+  --good: #53c556;
+  --critical: #eb6263;
+}
+
+/* ui-sdk's default look, themed with the dashboard tokens */
+:root {
+  --ui-background: var(--surface);
+  --ui-foreground: var(--ink);
+  --ui-muted: var(--surface-muted);
+  --ui-muted-foreground: var(--ink-muted);
+  --ui-border: var(--hairline);
+  --ui-input: var(--axis);
+  --ui-primary: var(--accent);
+  --ui-primary-foreground: #ffffff;
+  --ui-destructive: var(--critical);
+  --ui-ring: var(--accent-soft);
+  --ui-ring-border: var(--accent);
+  --ui-radius: 0.5rem;
+  --ui-font-size: 0.875rem;
+  --ui-font-sans: var(--font-sans);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ui-primary-foreground: #0b0b0d;
+  }
+}
+
+:root[data-theme='dark'] {
+  --ui-primary-foreground: #0b0b0d;
+}
+
+/* links here are cards, rows and buttons: web.css underlines every <a> */
+@layer components {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@theme inline {
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-hairline: var(--hairline);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-good: var(--good);
+  --color-critical: var(--critical);
+}
+
+@layer base {
+  body {
+    background-color: var(--page);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * Navigation feedback: a control that starts a navigation renders an element with
+ * [data-pending] (RangeControl, PendingHint). While one is present the page dims and a
+ * bar runs under the header, so slow queries never look like a dead click.
+ */
+@keyframes pending-bar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@layer base {
+  main {
+    transition: opacity 150ms ease;
+  }
+
+  body:has([data-pending]) main {
+    opacity: 0.6;
+    transition-delay: 120ms;
+  }
+
+  body:has([data-pending]) .pending-bar {
+    opacity: 1;
+  }
+
+  body:has([data-pending]) .pending-bar::after {
+    animation: pending-bar 1s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body:has([data-pending]) .pending-bar::after {
+      animation: none;
+      width: 100%;
+    }
+  }
+}

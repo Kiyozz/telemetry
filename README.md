@@ -1,28 +1,46 @@
-# Telemetry
+# PCA Telemetry
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Anonymous usage statistics of [Papyrus Compiler App](https://github.com/Kiyozz/papyrus-compiler-app): a dashboard per app (events, launches, first launches, exceptions, versions, games, event types and their properties) and an events explorer.
 
-## Getting Started
+Next.js 16 (App Router, Cache Components), React 19, Tailwind CSS 4, [ui-sdk](https://ui-sdk.dev), Recharts, Prisma 7 on PostgreSQL. Runs on bun.
 
-First, run the development server:
+## Getting started
 
 ```bash
-pnpm dev
+docker compose up -d        # PostgreSQL on 5432, database "telemetry"
+bun install
+bun run prisma:deploy       # apply the migrations
+bun run db:seed             # optional: fake anonymous events
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Local defaults live in `.env.development`; set the variables in the hosting environment for production:
 
-## Learn More
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT` (5432), `POSTGRES_DATABASE` (telemetry), `POSTGRES_SSLMODE` (preferred), or a full `DATABASE_URL` instead. `sslmode` accepts `disable`, `prefer`, `require`, `verify-ca` and `verify-full`.
+- `TELEMETRY_ADMIN_TOKEN` (optional): when set, `POST /api/v1/apps` and `PUT /api/v1/apps/:key` need `Authorization: Bearer <token>`.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Script                            | What it does                      |
+| --------------------------------- | --------------------------------- |
+| `bun run dev` / `build` / `start` | Next.js                           |
+| `bun run lint`                    | oxlint                            |
+| `bun run fmt` / `fmt:check`       | oxfmt                             |
+| `bun run typecheck`               | route types + `tsc`               |
+| `bun run prisma:migrate`          | create a migration in development |
+| `bun run prisma:deploy`           | apply migrations in production    |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## API
 
-## Deploy on Vercel
+| Method        | Path                                   |                                             |
+| ------------- | -------------------------------------- | ------------------------------------------- |
+| `POST`        | `/api/v1/events`                       | `{ type, appKey, properties }`, sent by PCA |
+| `GET`         | `/api/v1/apps`                         | list apps                                   |
+| `POST`        | `/api/v1/apps`                         | `{ name }`, create an app                   |
+| `GET` / `PUT` | `/api/v1/apps/:key`                    | read or rename an app                       |
+| `GET`         | `/api/v1/apps/:key/events?page=&type=` | events, 150 per page                        |
+| `GET`         | `/api/v1/apps/:key/summary`            | counts per type                             |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Privacy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+No IP address, user agent or identifier is stored. Event properties go through `src/lib/anonymize.ts` on ingestion and again on display: file paths are reduced to file names, home folders to `~`, and e-mail addresses are removed.

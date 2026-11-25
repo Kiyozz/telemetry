@@ -5,18 +5,18 @@
       "name": "telemetry@dev",
       "request": "launch",
       "runtimeArgs": ["run-script", "dev"],
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "bun",
       "skipFiles": ["<node_internals>/**"],
-      "type": "pwa-node"
+      "type": "node"
     },
     {
       "name": "telemetry@production",
       "request": "launch",
       "runtimeArgs": ["run-script", "start"],
       "preLaunchTask": "telemetry@build",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "bun",
       "skipFiles": ["<node_internals>/**"],
-      "type": "pwa-node"
+      "type": "node"
     }
   ]
 }
