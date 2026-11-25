@@ -5,6 +5,12 @@ import { anonymize, readProperties } from '@/lib/anonymize'
 import { prisma } from '@/lib/db'
 import { bucketOf, ranges, type RangeKey } from '@/lib/range'
 
+/*
+ * Queries use 'use cache: remote': pages read searchParams, so they render per request, and on
+ * serverless hosts the in-memory 'use cache' store rarely survives between requests. The remote
+ * handler (provided by Vercel, in-memory when self-hosted) is shared by every instance.
+ */
+
 /** Old events keep their properties as a JSON string inside the jsonb column. */
 const { empty, raw, sql } = Prisma
 
@@ -32,7 +38,7 @@ export interface AppListItem {
 }
 
 export async function getApps(): Promise<AppListItem[]> {
-  'use cache'
+  'use cache: remote'
   cacheLife('minutes')
   cacheTag('apps')
 
@@ -80,7 +86,7 @@ export async function getApps(): Promise<AppListItem[]> {
 }
 
 export async function getApp(key: string) {
-  'use cache'
+  'use cache: remote'
   cacheLife('minutes')
   cacheTag(`app:${key}`)
 
@@ -134,7 +140,7 @@ function fold(rows: { label: string | null; count: bigint }[], limit: number): S
 }
 
 export async function getDashboard(appId: number, range: RangeKey): Promise<Dashboard> {
-  'use cache'
+  'use cache: remote'
   cacheLife('minutes')
   cacheTag(`app-id:${appId}`)
 
@@ -265,7 +271,7 @@ export interface PropertyBreakdown {
 const UNGROUPED_PROPERTIES = ['stack']
 
 export async function getTypeBreakdown(appId: number, type: string, range: RangeKey): Promise<PropertyBreakdown[]> {
-  'use cache'
+  'use cache: remote'
   cacheLife('minutes')
   cacheTag(`app-id:${appId}`)
 
@@ -373,7 +379,7 @@ const EXCEPTION_GROUPS = 100
 
 /** Exceptions grouped by message, most frequent first. */
 export async function getExceptions(appId: number, range: RangeKey): Promise<ExceptionsReport> {
-  'use cache'
+  'use cache: remote'
   cacheLife('minutes')
   cacheTag(`app-id:${appId}`)
 
