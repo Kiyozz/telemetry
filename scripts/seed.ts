@@ -5,7 +5,7 @@
 import nextEnv from '@next/env'
 import { Client } from 'pg'
 
-nextEnv.loadEnvConfig(process.cwd())
+nextEnv.loadEnvConfig(process.cwd(), true)
 
 const url = new URL(process.env.DATABASE_URL ?? '')
 url.searchParams.delete('schema')

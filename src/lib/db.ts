@@ -10,8 +10,19 @@ import { PrismaClient } from '@/generated/prisma/client'
 function createAdapter() {
   const url = new URL(process.env.DATABASE_URL ?? '')
   const sslmode = url.searchParams.get('sslmode')
-  url.searchParams.delete('sslmode')
-  url.searchParams.delete('schema')
+
+  // Prisma-only parameters that node-postgres doesn't know
+  for (const name of [
+    'sslmode',
+    'schema',
+    'pgbouncer',
+    'connection_limit',
+    'pool_timeout',
+    'connect_timeout',
+    'socket_timeout',
+  ]) {
+    url.searchParams.delete(name)
+  }
 
   let ssl: boolean | { rejectUnauthorized: boolean } = false
 
