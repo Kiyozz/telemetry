@@ -14,9 +14,9 @@ bun run db:seed             # optional: fake anonymous events
 bun run dev
 ```
 
-Configuration lives in `.env` (local defaults); override it in `.env.local` or the hosting environment:
+Local defaults live in `.env.development`; set the variables in the hosting environment for production:
 
-- `DATABASE_URL`: PostgreSQL connection string. `sslmode` accepts `disable`, `prefer`, `require`, `verify-ca` and `verify-full`.
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT` (5432), `POSTGRES_DATABASE` (telemetry), `POSTGRES_SSLMODE` (preferred), or a full `DATABASE_URL` instead. `sslmode` accepts `disable`, `prefer`, `require`, `verify-ca` and `verify-full`.
 - `TELEMETRY_ADMIN_TOKEN` (optional): when set, `POST /api/v1/apps` and `PUT /api/v1/apps/:key` need `Authorization: Bearer <token>`.
 
 ## Scripts

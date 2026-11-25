@@ -1,6 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg'
 
 import { PrismaClient } from '@/generated/prisma/client'
+import { databaseUrl } from '@/lib/database-url'
 
 /**
  * node-postgres reads `sslmode` itself, but only knows the libpq values: the old
@@ -8,7 +9,7 @@ import { PrismaClient } from '@/generated/prisma/client'
  * keep SSL without checks, `disable` turns it off.
  */
 function createAdapter() {
-  const url = new URL(process.env.DATABASE_URL ?? '')
+  const url = new URL(databaseUrl())
   const sslmode = url.searchParams.get('sslmode')
 
   // Prisma-only parameters that node-postgres doesn't know
@@ -37,8 +38,15 @@ function createAdapter() {
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter: createAdapter() })
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
+function client(): PrismaClient {
+  globalForPrisma.prisma ??= new PrismaClient({ adapter: createAdapter() })
+  return globalForPrisma.prisma
 }
+
+// Created on first use, so that building without database variables works.
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, property) {
+    const value = Reflect.get(client(), property)
+    return typeof value === 'function' ? value.bind(client()) : value
+  },
+})
